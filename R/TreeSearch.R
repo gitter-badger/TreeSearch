@@ -116,6 +116,98 @@ EdgeListSearch <- function (edgeList, dataset,
   }
 }
 
+EdgeMatrixSearch <- function (edgeMatrix, dataset,
+                              TreeScorer = MorphyLength,
+                              ProposedMoves = RootedTBRSwapAll,
+                              maxHits = 40L, 
+                              bestScore=NULL, verbosity=1L, ...) {
+  epsilon <- 1e-07
+  if (is.null(bestScore)) {
+    attrScore <- attr(edgeMatrix, 'score')
+    if (is.null(attrScore)) {
+      bestScore <- TreeScorer(edgeMatrix[, 1], edgeMatrix[, 2], dataset, ...)
+    } else {
+      bestScore <- attrScore
+    }
+  }
+  if (verbosity > 0L) {
+    message("  - Performing tree search.  Initial score: ", bestScore)
+  }
+  nHits <- 1L
+  nEdge <- dim(edgeMatrix)[1]
+  nothingHit <- array(NA, dim = c(nEdge, 2L, maxHits))
+  hits <- nothingHit
+  hits[, , 1] <- edgeMatrix
+  
+  
+  NotHitAlready <- function (candidates) {
+    actualHits <- hits[, , !is.na(hits[1, 1, ]), drop = FALSE]
+    alreadyHit <- apply(candidates, 3, function (cand) {
+      any(apply(hits, 3, identical, cand))
+    })
+    candidates[, , !alreadyHit]
+  }
+  
+  while (nHits < maxHits) {
+    candidates <- ProposedMoves(edgeList[[1]], edgeList[[2]], nEdge)
+    candidates <- NotHitAlready(candidates)
+    nCandidates <- dim(candidates)[3]
+    if (verbosity > 3L) {
+      message('  - ', nCandidates, ' unvisited trees one TBR move away')
+    }
+    stuck <- TRUE
+    
+    for (i in sample(seq_len(nCandidates))) {
+      candidateScore <- TreeScorer(candidates[, 1, i],candidates[, 2, i],
+                                   dataset) ### , ...)
+      
+      if (candidateScore < bestScore + epsilon) {
+        stuck <- FALSE
+        if (candidateScore + epsilon < bestScore) {
+          # New best score
+          hits <- nothingHit
+          hits[, , 1] <- candidates[, , i]
+          nHits <- 1L
+          bestScore <- candidateScore
+          if (verbosity > 1L) {
+            message('  - New best score: ', bestScore)
+          }
+          break
+        } else {
+          nHits <- nHits + 1L
+          hits[, , nHits] <- candidates[, , i]
+          if (verbosity > 2L) {
+            message('   - Score ', candidateScore, ' hit ', nHits, ' times.')
+          }
+          if (nHits >= maxHits) break
+        }
+      } else {
+        if (verbosity > 4L) {
+          message('   - Candidate score ', candidateScore, ' > ',
+                  bestScore)
+        }
+      }
+    }
+    if (stuck) {
+      if (verbosity > 1L) {
+        message("  - Reached local optimum.")
+      }
+      break
+    }
+  }
+  
+  if (verbosity > 0L) {
+    message("  - Final score ", bestScore, " found ", nHits, " times.",
+            if (verbosity > 1L) '\n' else '')
+  }
+  
+  ret <- hits[, , !is.na(hits[1, 1, ]), drop = FALSE]
+  attr(ret, 'score') <- bestScore
+  
+  # Return:
+  ret
+}
+
 #' Search for most parsimonious trees
 #'
 #' Run standard search algorithms (\acronym{NNI}, \acronym{SPR} or \acronym{TBR}) 

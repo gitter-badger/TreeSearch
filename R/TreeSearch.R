@@ -153,7 +153,7 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
     candidates <- NotHitAlready(candidates)
     nCandidates <- dim(candidates)[3]
     if (verbosity > 3L) {
-      message('  - ', nCandidates, ' unvisited trees one TBR move away')
+      message('  - ', nCandidates, ' unvisited trees one TBR move away.')
     }
     stuck <- TRUE
     
@@ -179,9 +179,15 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
           if (verbosity > 2L) {
             message('   - Score ', candidateScore, ' hit ', nHits, ' times.')
           }
-          #if (nHits >= maxHits) break
+          # Let's try a new tree
           edgeMatrix <- candidates[, , i]
-          break # Let's try a new tree
+          
+          if (nHits >= maxHits) {
+            if (verbosity > 2L) {
+              message("Hit best score ", bestScore, ' ', nHits, 'times.')
+            }
+            break
+          }
         }
       } else {
         if (verbosity > 4L) {

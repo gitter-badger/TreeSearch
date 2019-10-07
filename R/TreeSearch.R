@@ -159,7 +159,7 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
     
     for (i in sample(seq_len(nCandidates))) {
       candidateScore <- TreeScorer(candidates[, 1, i],candidates[, 2, i],
-                                   dataset) ### , ...)
+                                   dataset, ...)
       
       if (candidateScore < bestScore + epsilon) {
         stuck <- FALSE
@@ -290,6 +290,26 @@ TreeSearch <- function (tree, dataset,
                              stopAtPeak = stopAtPeak, stopAtPlateau = stopAtPlateau,
                              verbosity = verbosity, ...)
   
+  tree$edge <- ListToMatrix(edgeList)
+  attr(tree, 'score') <- edgeList[[3]]
+  attr(tree, 'hits') <- edgeList[[4]]
+  # Return:
+  tree 
+}
+
+TreeSearch2 <- function (tree, dataset, 
+                         InitializeData = PhyDat2Morphy,
+                         CleanUpData    = UnloadMorphy,
+                         TreeScorer     = MorphyLength,
+                         ProposedMoves  = RootedTBRSwapAll,
+                         maxHits = 40L, verbosity = 1L, ...) {
+  # initialize tree and data
+  if (dim(tree$edge)[1] != 2 * tree$Nnode) {
+    stop("tree must be bifurcating; try rooting with ape::root")
+  }
+  tree <- RenumberTips(tree, names(dataset))
+  edgeList <- MatrixToList(tree$edge)
+  edgeList <- RenumberEdges(edgeList[[1]], edgeList[[2]])
   tree$edge <- ListToMatrix(edgeList)
   attr(tree, 'score') <- edgeList[[3]]
   attr(tree, 'hits') <- edgeList[[4]]

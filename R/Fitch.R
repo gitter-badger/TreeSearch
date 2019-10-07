@@ -84,8 +84,8 @@ FitchSteps <- function (tree, dataset) {
 #' @describeIn CharacterLength Do not perform checks.  Use with care: may cause
 #' erroneous results or  software crash if variables are in the incorrect format.
 FastCharacterLength <- function (tree, dataset) {
-  characters <- PhyToString(dataset, ps='', useIndex=FALSE, byTaxon=FALSE,
-                            concatenate=FALSE)
+  characters <- PhyToString(dataset, ps = '', useIndex = FALSE, byTaxon = FALSE,
+                            concatenate = FALSE)
   morphyObjects <- lapply(characters, SingleCharMorphy)
   on.exit(morphyObjects <- vapply(morphyObjects, UnloadMorphy, integer(1)))
   

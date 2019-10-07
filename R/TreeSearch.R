@@ -149,7 +149,7 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
   }
   
   while (nHits < maxHits) {
-    candidates <- ProposedMoves(edgeList[[1]], edgeList[[2]], nEdge)
+    candidates <- ProposedMoves(edgeMatrix[, 1], edgeMatrix[, 2], nEdge)
     candidates <- NotHitAlready(candidates)
     nCandidates <- dim(candidates)[3]
     if (verbosity > 3L) {
@@ -179,7 +179,9 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
           if (verbosity > 2L) {
             message('   - Score ', candidateScore, ' hit ', nHits, ' times.')
           }
-          if (nHits >= maxHits) break
+          #if (nHits >= maxHits) break
+          edgeMatrix <- candidates[, , i]
+          break # Let's try a new tree
         }
       } else {
         if (verbosity > 4L) {
@@ -310,9 +312,28 @@ TreeSearch2 <- function (tree, dataset,
   tree <- RenumberTips(tree, names(dataset))
   edgeList <- MatrixToList(tree$edge)
   edgeList <- RenumberEdges(edgeList[[1]], edgeList[[2]])
-  tree$edge <- ListToMatrix(edgeList)
-  attr(tree, 'score') <- edgeList[[3]]
-  attr(tree, 'hits') <- edgeList[[4]]
+  edgeMatrix <- array(unlist(edgeList), dim = dim(tree$edge))
+  
+  initializedData <- InitializeData(dataset)
+  on.exit(initializedData <- CleanUpData(initializedData))
+  
+  bestScore <- attr(tree, 'score')
+  edges <- EdgeMatrixSearch(edgeMatrix, initializedData, TreeScorer=TreeScorer,
+                           ProposedMoves = ProposedMoves, maxHits = maxHits,
+                           verbosity = verbosity, ...)
+  
+  if (dim(edges)[3] > 1L) {
+     ret <- structure(apply(edges, 3, function (edge) {
+        ret <- tree
+        ret$edge <- edge
+        ret
+      }), class='multiPhylo', score = attr(edges, 'score'))
+  } else {
+    tree$edge <- edge[, , 1]
+    attr(tree, 'score') <- attr(edge, 'score')
+    ret <- tree
+  }
+  
   # Return:
-  tree 
+  ret
 }

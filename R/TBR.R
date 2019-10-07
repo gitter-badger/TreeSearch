@@ -199,7 +199,8 @@ TBRSwap <- function(parent, child, nEdge = length(parent),
 }
 
 TBRTree <- function (adriftReconnectionEdge, rootedReconnectionEdge,
-                     parent, child, nEdge,
+                     parent, child, nEdge, 
+                     edgeToBreak,
                      brokenEdge, breakingRootEdge, nearBrokenEdge,
                      brokenEdge.parentNode, brokenEdge.childNode,
                      brokenEdgeDaughters, brokenRootDaughters,
@@ -275,6 +276,8 @@ TBRSwapAll <- function(parent, child, nEdge = length(parent)) {
       # Edge to break is the Root Node.
       brokenRootDaughters <- parent == child[brokenEdgeSister]
       nearBrokenEdge <- nearBrokenEdge | brokenRootDaughters
+    } else {
+      brokenRootDaughters <- NULL
     }
     
     candidateEdges <- which(!nearBrokenEdge & not1)
@@ -292,6 +295,7 @@ TBRSwapAll <- function(parent, child, nEdge = length(parent)) {
           TBRTree(adriftReconnectionEdge = adriftReconnectionEdge, 
                   rootedReconnectionEdge = rootedReconnectionEdge,
                   parent, child, nEdge,
+                  edgeToBreak,
                   brokenEdge, breakingRootEdge, nearBrokenEdge,
                   brokenEdge.parentNode, brokenEdge.childNode,
                   brokenEdgeDaughters, brokenRootDaughters,
@@ -309,6 +313,7 @@ TBRSwapAll <- function(parent, child, nEdge = length(parent)) {
           TBRTree(adriftReconnectionEdge = adriftReconnectionEdge,
                   rootedReconnectionEdge = rootedReconnectionEdge,
                   parent, child, nEdge,
+                  edgeToBreak,
                   brokenEdge, breakingRootEdge, nearBrokenEdge,
                   brokenEdge.parentNode, brokenEdge.childNode,
                   brokenEdgeDaughters, brokenRootDaughters,
@@ -406,7 +411,8 @@ RootedTBRSwapAll <- function (parent, child, nEdge=length(parent)) {
           TBRTree(adriftReconnectionEdge = adriftReconnectionEdge, 
                   rootedReconnectionEdge = rootedReconnectionEdge,
                   parent, child, nEdge,
-                  brokenEdge, breakingRootEdge, nearBrokenEdge,
+                  edgeToBreak,
+                  brokenEdge, breakingRootEdge = FALSE, nearBrokenEdge,
                   brokenEdge.parentNode, brokenEdge.childNode,
                   brokenEdgeDaughters, brokenRootDaughters,
                   brokenEdgeSister, 
@@ -425,7 +431,8 @@ RootedTBRSwapAll <- function (parent, child, nEdge=length(parent)) {
           TBRTree(adriftReconnectionEdge = adriftReconnectionEdge,
                   rootedReconnectionEdge = rootedReconnectionEdge,
                   parent, child, nEdge,
-                  brokenEdge, breakingRootEdge, nearBrokenEdge,
+                  edgeToBreak,
+                  brokenEdge, breakingRootEdge = FALSE, nearBrokenEdge,
                   brokenEdge.parentNode, brokenEdge.childNode,
                   brokenEdgeDaughters, brokenRootDaughters,
                   brokenEdgeSister, 

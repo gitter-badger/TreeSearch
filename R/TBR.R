@@ -75,7 +75,8 @@ TBR <- function(tree, edgeToBreak = NULL, mergeEdges = NULL) {
 #' @param nEdge (optional) Number of edges.
 #' @return a list containing two elements, corresponding in turn to the rearranged parent and child parameters
 #' @export
-TBRSwap <- function(parent, child, nEdge = length(parent), edgeToBreak=NULL, mergeEdges=NULL) {
+TBRSwap <- function(parent, child, nEdge = length(parent), 
+                    edgeToBreak = NULL, mergeEdges = NULL) {
   if (nEdge < 5) return (list(parent, child)) #TODO do we need to re-root this tree?
   
   # Pick an edge at random

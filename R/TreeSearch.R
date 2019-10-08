@@ -86,10 +86,13 @@ EdgeListSearch <- function (edgeList, dataset,
   edgeList
 }
 
+#' @param followPlateau Logical: if `TRUE`, search all trees one TBR move away
+#' from any best-scoring tree; if `FALSE`, stop once a best tree has been found 
+#' and no immediate neighbours have a better score.
 EdgeMatrixSearch <- function (edgeMatrix, dataset,
                               TreeScorer = MorphyLength,
                               ProposedMoves = RootedTBRSwapAll,
-                              maxHits = 40L, 
+                              maxHits = 40L, followPlateau = TRUE,
                               bestScore=NULL, verbosity=1L, ...) {
   epsilon <- 1e-07
   if (is.null(bestScore)) {
@@ -108,7 +111,7 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
   nothingHit <- array(NA, dim = c(nEdge, 2L, maxHits))
   hits <- nothingHit
   hits[, , 1] <- edgeMatrix
-  
+  hitToExamine <- 1L
   
   NotHitAlready <- function (candidates) {
     dimCandidates <- dim(candidates)
@@ -117,14 +120,16 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
     
     priorHits <- duplicated(array(
       c(candidates, hits[, , actualHits, drop = FALSE]),
-      dim = c(dimCandidates[1:2], nCandidates + sum(actualHits))),
+      dim = c(dimCandidates[1:2], nCandidates + nHits)),
       MARGIN = 3L, fromLast = TRUE)[seq_len(nCandidates)]
     candidates[, , !priorHits]
   }
   
   while (nHits < maxHits) {
-    candidates <- ProposedMoves(edgeMatrix[, 1], edgeMatrix[, 2], nEdge)
+    startTree <- hits[, , hitToExamine]
+    candidates <- ProposedMoves(startTree[, 1], startTree[, 2], nEdge)
     candidates <- NotHitAlready(candidates)
+    
     nCandidates <- dim(candidates)[3]
     if (verbosity > 3L) {
       message('  - ', nCandidates, ' unvisited trees one TBR move away.')
@@ -138,30 +143,35 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
       if (candidateScore < bestScore + epsilon) {
         stuck <- FALSE
         if (candidateScore + epsilon < bestScore) {
-          # New best score
-          hits <- nothingHit
-          hits[, , 1] <- candidates[, , i]
-          nHits <- 1L
+          
           bestScore <- candidateScore
           if (verbosity > 1L) {
             message('  - New best score: ', bestScore)
           }
+          
+          hits <- nothingHit
+          hits[, , 1] <- candidates[, , i]
+          nHits <- 1L
+          hitToExamine <- 1L
+          
           break
+          
         } else {
+          
           nHits <- nHits + 1L
           hits[, , nHits] <- candidates[, , i]
+          
           if (verbosity > 2L) {
             message('   - Score ', candidateScore, ' hit ', nHits, ' times.')
           }
-          # Let's try a new tree
-          edgeMatrix <- candidates[, , i]
           
           if (nHits >= maxHits) {
             if (verbosity > 2L) {
-              message("Hit best score ", bestScore, ' ', nHits, 'times.')
+              message("   - Reached maximum hits (maxHits = ", maxHits, ").")
             }
             break
           }
+          
         }
       } else {
         if (verbosity > 4L) {
@@ -171,10 +181,30 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
       }
     }
     if (stuck) {
-      if (verbosity > 1L) {
-        message("  - Reached local optimum.")
+      if (followPlateau) {
+        if (hitToExamine < nHits) {
+          if (verbosity > 2L) {
+            message("  - Result ", hitToExamine, " is locally optimal. ",
+                    "Continuing from result ", hitToExamine + 1L, "/",
+                    nHits)
+          }
+          hitToExamine <- hitToExamine + 1L
+        } else {
+          if (verbosity > 1L) {
+            message("  - All ", nHits, " best trees are locally optimal.")
+          }
+          
+          break  
+        }
+      } else {
+        
+        if (verbosity > 1L) {
+          message("  - Tree is locally optimal. ",
+                  "Stopping, as followPlateau = FALSE")
+        }
+        
+        break
       }
-      break
     }
   }
   
@@ -207,7 +237,6 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
 #' @param maxHits the maximum times to hit the best pscore before abandoning the search.
 #' @template stopAtPeakParam
 #' @template stopAtPlateauParam
-#' @param forestSize the maximum number of trees to return - useful in concert with \code{\link{consensus}}.
 #'
 #' @template InitializeDataParam
 #' @template CleanUpDataParam
@@ -279,11 +308,12 @@ TreeSearch <- function (tree, dataset,
   tree 
 }
 
-TreeSearch2 <- function (tree, dataset, 
+FindPeak <- function (tree, dataset, 
                          InitializeData = PhyDat2Morphy,
                          CleanUpData    = UnloadMorphy,
                          TreeScorer     = MorphyLength,
                          ProposedMoves  = RootedTBRSwapAll,
+                         followPlateau = TRUE,
                          maxHits = 40L, verbosity = 1L, ...) {
   # initialize tree and data
   if (dim(tree$edge)[1] != 2 * tree$Nnode) {
@@ -300,6 +330,7 @@ TreeSearch2 <- function (tree, dataset,
   bestScore <- attr(tree, 'score')
   edges <- EdgeMatrixSearch(edgeMatrix, initializedData, TreeScorer=TreeScorer,
                            ProposedMoves = ProposedMoves, maxHits = maxHits,
+                           followPlateau = followPlateau,
                            verbosity = verbosity, ...)
   
   if (dim(edges)[3] > 1L) {
@@ -309,8 +340,8 @@ TreeSearch2 <- function (tree, dataset,
         ret
       }), class='multiPhylo', score = attr(edges, 'score'))
   } else {
-    tree$edge <- edge[, , 1]
-    attr(tree, 'score') <- attr(edge, 'score')
+    tree$edge <- edges[, , 1]
+    attr(tree, 'score') <- attr(edges, 'score')
     ret <- tree
   }
   

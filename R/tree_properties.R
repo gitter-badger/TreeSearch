@@ -78,12 +78,16 @@ AncestorEdge <- function (edge, parent, child) child == parent[edge]
 #' @author Martin R. Smith
 #' @family tree navigation
 #' @export
-EdgeAncestry <- function (edge, parent, child, stopAt = (parent==min(parent))) {
+EdgeAncestry <- function (edge, parent, child, 
+                          stopAt = (parent == min(parent))) {
   ret <- edge <- AncestorEdge(edge, parent, child)
   repeat {
-    if (any(ret[stopAt])) return(ret)
-    ret[edge <- AncestorEdge(edge, parent, child)] <- TRUE    
+    if (any(ret[stopAt])) break
+    edge <- AncestorEdge(edge, parent, child)
+    ret[edge] <- TRUE
   }
+  # Return
+  ret
 }
 
 #' Most Recent Common Ancestor

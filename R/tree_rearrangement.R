@@ -50,17 +50,19 @@ RearrangeEdges <- function (parent, child, dataset, TreeScorer = MorphyLength,
     nBest <- sum(best)
     if (candidateScore > (scoreToBeat + eps)) {
       if (verbosity > 3L) message("    . Iteration ", iter, 
-                                  ' - Rearranged tree score ', candidateScore, 
-                              " > target ", scoreToBeat)
+                                  ' - Rearranged tree score ', 
+                                  signif(candidateScore), " > target ", 
+                                  signif(scoreToBeat))
     } else if (candidateScore + eps > scoreToBeat) { # i.e. scores are equal
       hits <- hits + nBest
-      if (verbosity > 2L) message("    - Iteration ", iter, " - Best score",
-                                  scoreToBeat, " found again ", nBest, 
+      if (verbosity > 2L) message("    - Iteration ", iter, " - Best score ",
+                                  signif(scoreToBeat), " found again ", nBest, 
                                   " times; now found ", hits, " times.")
     } else {
       hits <- nBest
-      if (verbosity > 1L) message("    * Iteration ", iter, " - New best score ",
-                                  candidateScore, " found on ", hits, " trees.")
+      if (verbosity > 1L) message("    * Iteration ", iter, 
+                                  " - New best score ", signif(candidateScore),
+                                  " found on ", hits, " trees.")
     }
     rearrangedEdges <- rearrangedEdges[[SampleOne(which(best), nBest)]]
   } else {
@@ -72,7 +74,7 @@ RearrangeEdges <- function (parent, child, dataset, TreeScorer = MorphyLength,
       }
     } else if (candidateScore + eps > scoreToBeat) { # i.e. scores are equal
       hits <- hits + 1L
-      if (verbosity > 2L) message("    - Iteration ", iter, " - Best score",
+      if (verbosity > 2L) message("    - Iteration ", iter, " - Best score ",
                                   signif(scoreToBeat, 6), " hit ",
                                   hits, " times.")
     } else {

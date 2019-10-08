@@ -148,7 +148,7 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
           
           bestScore <- candidateScore
           if (verbosity > 1L) {
-            message('  - New best score: ', bestScore)
+            message('  - New best score: ', signif(bestScore))
           }
           
           hits <- nothingHit
@@ -337,9 +337,7 @@ FindPeak <- function (tree, dataset,
     stop("tree must be bifurcating; try rooting with ape::root")
   }
   tree <- RenumberTips(tree, names(dataset))
-  edgeList <- MatrixToList(tree$edge)
-  edgeList <- RenumberEdges(edgeList[[1]], edgeList[[2]])
-  edgeMatrix <- array(unlist(edgeList), dim = dim(tree$edge))
+  edgeMatrix <- RenumberTreeStrict(tree$edge[, 1], tree$edge[, 2])
   
   initializedData <- InitializeData(dataset)
   on.exit(initializedData <- CleanUpData(initializedData))

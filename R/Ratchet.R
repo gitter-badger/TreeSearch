@@ -240,9 +240,9 @@ Ratchet2 <- function (tree, dataset,
                       BootstrapSwapper = ProposedMoves,
                       stopAtScore = NULL,
                       
-                      ratchIter=100L, ratchHits=10L,
-                      searchHits=100L, bootstrapHits=searchHits,
-                      verbosity=1L, suboptimal=1e-08, ...) {
+                      ratchIter = 1000L, ratchHits = 20L,
+                      searchHits = 100L, bootstrapHits = searchHits,
+                      verbosity = 1L, suboptimal = 1e-08, ...) {
   epsilon <- 1e-08
   nHits <- 1L
   # initialize tree and data
@@ -251,15 +251,14 @@ Ratchet2 <- function (tree, dataset,
          ape::collapse.singles")
   }
   tree <- RenumberTips(tree, names(dataset))
-  edgeList <- MatrixToList(tree$edge)
-  edgeList <- RenumberEdges(edgeList[[1]], edgeList[[2]])
-  hits <- array(unlist(edgeList), c(length(edgeList[[1]]), 2L, 1L))
+  edgeMatrix <- RenumberTreeStrict(tree$edge[, 1], tree$edge[, 2])
+  hits <- array(edgeMatrix, c(dim(edgeMatrix), 1L))
 
   initializedData <- InitializeData(dataset)
   on.exit(initializedData <- CleanUpData(initializedData))
   
   bestScore <- if (is.null(attr(tree, 'score'))) {
-    TreeScorer(edgeList[[1]], edgeList[[2]], initializedData, ...)
+    TreeScorer(edgeMatrix[, 1], edgeMatrix[, 2], initializedData, ...)
   } else {
     attr(tree, 'score')
   }
@@ -428,7 +427,7 @@ IWRatchet2 <- function (tree, dataset, concavity = 10,
            InitializeData = IWInitMorphy, CleanUpData = IWDestroyMorphy,
            TreeScorer = IWScoreMorphy, Bootstrapper = IWBootstrapMatrix,
            ProposedMoves = ProposedMoves, BootstrapSwapper = BootstrapSwapper,
-           minLength = attr(dataset, 'min.length'))
+           minLength = attr(dataset, 'min.length'), verbosity = verbosity)
 }
 
 #' Unique trees (ignoring 'hits' attribute)

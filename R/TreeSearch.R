@@ -178,8 +178,12 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
         }
       } else {
         if (verbosity > 4L) {
-          message('   - Candidate score ', signif(candidateScore, 6), ' > ',
-                  signif(bestScore, 6))
+          if (verbosity > 8L) {
+            message('   - Candidate score ', signif(candidateScore, 6), ' > ',
+                    signif(bestScore, 6))
+          } else {
+            message('.', appendLF = FALSE)
+          }
         }
       }
     }

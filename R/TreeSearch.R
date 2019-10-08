@@ -10,17 +10,9 @@ EdgeListSearch <- function (edgeList, dataset,
                             maxIter = 100L, maxHits = 20L, 
                             bestScore = NULL, stopAtScore = NULL, 
                             stopAtPeak = FALSE, stopAtPlateau = 0L,
-                            forestSize = 1L, verbosity = 1L, ...) {
+                            verbosity = 1L, ...) {
   epsilon <- 1e-07
-  if (!is.null(forestSize) && length(forestSize)) {
-    if (forestSize > 1L) {
-      stop("TODO: Forests not supported")
-      #### forest <- empty.forest <- vector('list', forestSize)
-      #### forest[[1]] <- edgeList
-    } else {
-      forestSize <- 1L
-    }
-  }
+  
   if (is.null(bestScore)) {
     if (length(edgeList) < 3L) {
       bestScore <- TreeScorer(edgeList[[1]], edgeList[[2]], dataset, ...)
@@ -39,7 +31,7 @@ EdgeListSearch <- function (edgeList, dataset,
     edgeList[[3]] <- bestScore
     return(edgeList)
   }
-  returnSingle <- !(forestSize > 1L)
+  
   hits <- 0L
   unimprovedSince <- 0L
   
@@ -49,47 +41,33 @@ EdgeListSearch <- function (edgeList, dataset,
                              hits=hits, iter=iter, verbosity=verbosity, ...)
     scoreThisIteration <- candidateLists[[3]]
     hits <- candidateLists[[4]]
-    if (forestSize > 1L) {
-      stop("TODO re-code this")
-      ###if (scoreThisIteration == bestScore) {
-      ###  forest[(hits-length(candidateLists)+1L):hits] <- candidateLists ## TODO Check that length still holds
-      ###  edgeList  <- sample(forest[1:hits], 1)[[1]]
-      ###  bestScore <- scoreThisIteration
-      ###  hits      <- hits + 1L
-      ###} else if (scoreThisIteration < bestScore) {
-      ###  bestScore <- scoreThisIteration
-      ###  forest <- empty.forest
-      ###  forest[1:hits] <- candidateLists
-      ###  edgeList <- sample(candidateLists , 1)[[1]]
-      ###  attr(edgeList, 'score') <- scoreThisIteration
-      ###}
-    } else {
-      if (scoreThisIteration < bestScore + epsilon) {
-        if (scoreThisIteration + epsilon < bestScore) unimprovedSince <- -1L
-        bestScore <- scoreThisIteration
-        edgeList  <- candidateLists
-        if (!is.null(stopAtScore) && bestScore < stopAtScore + epsilon) return(edgeList)
-      } else if (stopAtPeak && scoreThisIteration > bestScore + epsilon) {
-        if (verbosity > 1L) {
-          message("    ! Iteration ", iter, 
-                  " - No TBR rearrangement improves score. ",
-                  scoreThisIteration, " doesn't beat ", bestScore)
-        }
+  
+    if (scoreThisIteration < bestScore + epsilon) {
+      if (scoreThisIteration + epsilon < bestScore) unimprovedSince <- -1L
+      bestScore <- scoreThisIteration
+      edgeList  <- candidateLists
+      if (!is.null(stopAtScore) && bestScore < stopAtScore + epsilon) return(edgeList)
+    } else if (stopAtPeak && scoreThisIteration > bestScore + epsilon) {
+      if (verbosity > 1L) {
+        message("    ! Iteration ", iter, 
+                " - No TBR rearrangement improves score. ",
+                scoreThisIteration, " doesn't beat ", bestScore)
+      }
+      break
+    }
+    unimprovedSince <- unimprovedSince + 1L
+    if (stopAtPlateau > 0L) {
+      if (verbosity > 2L && unimprovedSince > 0L) {
+        message(" Last improvement ", unimprovedSince, " iterations ago.")
+      }
+      if (unimprovedSince >= stopAtPlateau) {
+        if (verbosity > 1L) message("  - Terminating search, as score has ",
+                                    "not improved over past ",
+                                    unimprovedSince, " searches.")
         break
       }
-      unimprovedSince <- unimprovedSince + 1L
-      if (stopAtPlateau > 0L) {
-        if (verbosity > 2L && unimprovedSince > 0L) {
-          message(" Last improvement ", unimprovedSince, " iterations ago.")
-        }
-        if (unimprovedSince >= stopAtPlateau) {
-          if (verbosity > 1L) message("  - Terminating search, as score has ",
-                                      "not improved over past ",
-                                      unimprovedSince, " searches.")
-          break
-        }
-      }
     }
+  
     if (hits >= maxHits) {
       if (verbosity > 1L) message("  - Terminating search; hit best score ",
                                   hits, " times.")
@@ -101,19 +79,11 @@ EdgeListSearch <- function (edgeList, dataset,
             iter, " rearrangements.", if (verbosity > 1L) '\n' else '')
   }
   
-  if (forestSize > 1L) {
-    if (hits < forestSize) forest <- forest[-((hits+1):forestSize)]
-    attr(forest, 'hits') <- hits
-    attr(forest, 'score') <- bestScore
+
+  edgeList[3:4] <- c(bestScore, hits)
     
-    # Return:
-    unique(forest)
-  } else {
-    edgeList[3:4] <- c(bestScore, hits)
-    
-    # Return:
-    edgeList
-  }
+  # Return:
+  edgeList
 }
 
 EdgeMatrixSearch <- function (edgeMatrix, dataset,
@@ -281,7 +251,7 @@ TreeSearch <- function (tree, dataset,
                         CleanUpData    = UnloadMorphy,
                         TreeScorer     = MorphyLength,
                         EdgeSwapper    = RootedTBRSwap,
-                        maxIter = 100L, maxHits = 20L, forestSize = 1L,
+                        maxIter = 100L, maxHits = 20L,
                         stopAtPeak = FALSE, stopAtPlateau = 0L,
                         verbosity = 1L, ...) {
   # initialize tree and data
@@ -298,7 +268,7 @@ TreeSearch <- function (tree, dataset,
   bestScore <- attr(tree, 'score')
   edgeList <- EdgeListSearch(edgeList, initializedData, TreeScorer=TreeScorer, 
                              EdgeSwapper = EdgeSwapper, maxIter = maxIter, 
-                             maxHits = maxHits, forestSize = forestSize, 
+                             maxHits = maxHits,
                              stopAtPeak = stopAtPeak, stopAtPlateau = stopAtPlateau,
                              verbosity = verbosity, ...)
   

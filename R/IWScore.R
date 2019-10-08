@@ -101,6 +101,6 @@ IWTreeSearch <- function (tree, dataset, concavity = 10,
              CleanUpData = IWDestroyMorphy,
              TreeScorer = IWScoreMorphy,
              EdgeSwapper = EdgeSwapper,
-             maxIter = maxIter, maxHits = maxHits, forestSize = forestSize,
+             maxIter = maxIter, maxHits = maxHits,
              verbosity = verbosity, ...)
 }

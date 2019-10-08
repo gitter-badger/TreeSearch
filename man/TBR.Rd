@@ -3,8 +3,9 @@
 \name{TBR}
 \alias{TBR}
 \alias{TBRSwap}
+\alias{TBRSwapAll}
+\alias{RootedTBRSwapAll}
 \alias{TBRMoves}
-\alias{AllTBR}
 \alias{RootedTBR}
 \alias{RootedTBRSwap}
 \title{Tree bisection and reconnection (TBR)}
@@ -14,10 +15,11 @@ TBR(tree, edgeToBreak = NULL, mergeEdges = NULL)
 TBRSwap(parent, child, nEdge = length(parent), edgeToBreak = NULL,
   mergeEdges = NULL)
 
-TBRMoves(parent, child, nEdge = length(parent), avoid = NULL,
-  retainRoot = FALSE)
+TBRSwapAll(parent, child, nEdge = length(parent))
 
-AllTBR(parent, child, nEdge = length(parent), avoid = NULL,
+RootedTBRSwapAll(parent, child, nEdge = length(parent))
+
+TBRMoves(parent, child, nEdge = length(parent), avoid = NULL,
   retainRoot = FALSE)
 
 RootedTBR(tree, edgeToBreak = NULL, mergeEdges = NULL)
@@ -58,8 +60,6 @@ a list containing two elements, corresponding in turn to the rearranged parent a
 
 a matrix with two columns, each row listing an edge that can be broken
 and an edge into which it can be merged
-
-a list of trees, in parent-child format
 }
 \description{
 \code{TBR} performs a single random \acronym{TBR} iteration.
@@ -74,9 +74,12 @@ All nodes in a tree must be bifurcating; \link[ape:collapse.singles]{ape::collap
 \itemize{
 \item \code{TBRSwap}: faster version that takes and returns parent and child parameters
 
-\item \code{TBRMoves}: Possible TBR moves
+\item \code{TBRSwapAll}: Return all edgelists that are one TBR move away, as arrays
 
-\item \code{AllTBR}: All unique trees one TBR move away
+\item \code{RootedTBRSwapAll}: eturn all edgelists that are one TBR move away but preserve
+the position of the root, as arrays
+
+\item \code{TBRMoves}: Possible TBR moves
 
 \item \code{RootedTBR}: Perform \acronym{TBR} rearrangement, retaining position of root
 

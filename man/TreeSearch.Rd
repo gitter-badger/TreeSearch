@@ -8,22 +8,21 @@
 \title{Search for most parsimonious trees}
 \usage{
 IWTreeSearch(tree, dataset, concavity = 10, EdgeSwapper = RootedTBR,
-  maxIter = 100, maxHits = 20, forestSize = 1, verbosity = 1, ...)
+  maxIter = 100L, maxHits = 20L, verbosity = 1, ...)
 
 EdgeListSearch(edgeList, dataset, TreeScorer = MorphyLength,
   EdgeSwapper = RootedTBRSwap, maxIter = 100L, maxHits = 20L,
   bestScore = NULL, stopAtScore = NULL, stopAtPeak = FALSE,
-  stopAtPlateau = 0L, forestSize = 1L, verbosity = 1L, ...)
+  stopAtPlateau = 0L, verbosity = 1L, ...)
 
 TreeSearch(tree, dataset, InitializeData = PhyDat2Morphy,
   CleanUpData = UnloadMorphy, TreeScorer = MorphyLength,
   EdgeSwapper = RootedTBRSwap, maxIter = 100L, maxHits = 20L,
-  forestSize = 1L, stopAtPeak = FALSE, stopAtPlateau = 0L,
-  verbosity = 1L, ...)
+  stopAtPeak = FALSE, stopAtPlateau = 0L, verbosity = 1L, ...)
 
 ProfileTreeSearch(tree, dataset, EdgeSwapper = RootedTBR,
-  maxIter = 100, maxHits = 20, forestSize = 1, verbosity = 1,
-  precision = 40000, ...)
+  maxIter = 100, maxHits = 20, verbosity = 1, precision = 40000,
+  ...)
 }
 \arguments{
 \item{tree}{a fully-resolved starting tree in \code{\link{phylo}} format, with the desired outgroup; edge lengths are not supported and will be deleted;}
@@ -41,8 +40,6 @@ and returns a list with modified vectors; for example
 \item{maxIter}{the maximum number of iterations to perform before abandoning the search.}
 
 \item{maxHits}{the maximum times to hit the best pscore before abandoning the search.}
-
-\item{forestSize}{the maximum number of trees to return - useful in concert with \code{\link{consensus}}.}
 
 \item{verbosity}{Level of detail to display in console: larger numbers provide
 more verbose feedback to the user.}

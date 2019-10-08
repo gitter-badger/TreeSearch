@@ -112,18 +112,22 @@ extern SEXP RENUMBER_EDGES(SEXP parent, SEXP child, SEXP ned) {
 }
 
 
-int lowest_descendant(int node, int *child_l, int *child_r, int *lowest_desc) {
-  const int left = child_l[node],
-            right = child_r[node];
+int lowest_descendant(int node, int *child_l, int *child_r, const int *root_node,
+                      int *lowest_desc) {
+  const int left  = child_l[node - *root_node],
+            right = child_r[node - *root_node];
   int lowest_left, lowest_right;
+  
   lowest_left = lowest_desc[left - 1];
   if (!lowest_left) {
-    lowest_left = lowest_descendant(left, child_l, child_r, lowest_desc);
+    lowest_left = lowest_descendant(left, child_l, child_r, root_node,
+                                    lowest_desc);
   }
   
   lowest_right = lowest_desc[right - 1];
   if (!lowest_right) {
-    lowest_right = lowest_descendant(right, child_l, child_r, lowest_desc);
+    lowest_right = lowest_descendant(right, child_l, child_r, root_node,
+                                     lowest_desc);
   }
   
   lowest_desc[node - 1] = lowest_left < lowest_right ? 
@@ -166,8 +170,9 @@ extern void order_left_lowest(int *parent, int *child, const int *n_edge)
       lowest_desc[i - 1] = i;
     }
     
-    if (1 != lowest_descendant(0, child_l, child_r, lowest_desc)) {
-      Rprintf("Error finding lowest descendant");
+    if (1 != lowest_descendant(root_node, child_l, child_r, &root_node,
+                               lowest_desc)) {
+      Rprintf("Error finding lowest descendant\n");
     }
     
     for (i = 0; i < n_node; i++) {

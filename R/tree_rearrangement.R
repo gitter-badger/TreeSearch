@@ -38,13 +38,17 @@
 #' 
 #' @export
 RearrangeEdges <- function (parent, child, dataset, TreeScorer = MorphyLength,
-                            EdgeSwapper, scoreToBeat=TreeScorer(parent, child, dataset, ...),
+                            EdgeSwapper, scoreToBeat = 
+                              TreeScorer(parent, child, dataset, ...),
                             iter='?', hits=0L, verbosity=0L, ...) {
   eps <- 1e-08
   rearrangedEdges <- EdgeSwapper(parent, child)
   if (class(rearrangedEdges[[1]]) == 'list') {
     # Then we've been sent a list of possible trees
-    candidateScores <- vapply(rearrangedEdges, function (edges) TreeScorer(edges[[1]], edges[[2]], dataset, ...), double(1))
+    candidateScores <- vapply(
+      rearrangedEdges,
+      function (edges) TreeScorer(edges[[1]], edges[[2]], dataset, ...), 
+      double(1))
     candidateScore <- min(candidateScores)
     best <- candidateScores == candidateScore
     nBest <- sum(best)

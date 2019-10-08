@@ -507,7 +507,9 @@ TBRMoves <- function(parent, child, nEdge = length(parent), avoid=NULL, retainRo
 #' @describeIn TBR Perform \acronym{TBR} rearrangement, retaining position of root
 #' @export
 RootedTBR <- function(tree, edgeToBreak = NULL, mergeEdges = NULL) {
-  if (is.null(treeOrder <- attr(tree, 'order')) || treeOrder != 'preorder') tree <- Preorder(tree)
+  if (is.null(treeOrder <- attr(tree, 'order')) || treeOrder != 'preorder') {
+    tree <- Preorder(tree)
+  }
   edge   <- tree$edge
   tree$edge <- ListToMatrix(RootedTBRSwap(edge[, 1], edge[, 2], 
                             edgeToBreak=edgeToBreak, mergeEdges=mergeEdges))

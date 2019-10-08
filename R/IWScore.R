@@ -89,10 +89,15 @@ IWInitMorphy <- function (dataset) {
 #' @export
 IWTreeSearch <- function (tree, dataset, concavity = 10, 
                           EdgeSwapper = RootedTBR,
-                        maxIter = 100, maxHits = 20, forestSize = 1,
-                        verbosity = 1, ...) {
-  if (class(dataset) != 'phyDat') stop("Unrecognized dataset class; should be phyDat, not ", class(dataset), '.')
-  if (!('min.length' %in% names(attributes(dataset)))) dataset <- PrepareDataIW(dataset)
+                          maxIter = 100L, maxHits = 20L,
+                          verbosity = 1, ...) {
+  if (class(dataset) != 'phyDat') {
+    stop("Unrecognized dataset class; should be phyDat, not ", 
+         class(dataset), '.')
+  }
+  if (!('min.length' %in% names(attributes(dataset)))) {
+    dataset <- PrepareDataIW(dataset)
+  }
   at <- attributes(dataset)
   
   TreeSearch(tree, dataset, nChar=at$nr, weight=at$weight,

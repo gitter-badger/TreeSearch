@@ -294,11 +294,10 @@ TreeSearch <- function (tree, dataset,
   initializedData <- InitializeData(dataset)
   on.exit(initializedData <- CleanUpData(initializedData))
 
-  bestScore <- attr(tree, 'score')
   edgeList <- EdgeListSearch(edgeList, initializedData, TreeScorer=TreeScorer, 
                              EdgeSwapper = EdgeSwapper, maxIter = maxIter, 
-                             maxHits = maxHits,
-                             stopAtPeak = stopAtPeak, stopAtPlateau = stopAtPlateau,
+                             maxHits = maxHits, stopAtPeak = stopAtPeak, 
+                             stopAtPlateau = stopAtPlateau,
                              verbosity = verbosity, ...)
   
   tree$edge <- ListToMatrix(edgeList)

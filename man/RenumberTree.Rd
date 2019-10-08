@@ -37,11 +37,6 @@ Other C wrappers: \code{\link{Cladewise}},
   \code{\link{NeworderPhylo}},
   \code{\link{NeworderPruningwise}},
   \code{\link{OrderEdgesNumberNodes}}
-
-Other C wrappers: \code{\link{Cladewise}},
-  \code{\link{NeworderPhylo}},
-  \code{\link{NeworderPruningwise}},
-  \code{\link{OrderEdgesNumberNodes}}
 }
 \concept{C wrappers}
 \keyword{internal}

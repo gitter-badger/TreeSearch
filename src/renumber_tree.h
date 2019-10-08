@@ -112,40 +112,31 @@ extern SEXP RENUMBER_EDGES(SEXP parent, SEXP child, SEXP ned) {
 }
 
 
-int lowest_descendant(int node, int *child_l, int *child_r, const int *root_node,
-                      int *lowest_desc) {
+int lowest_descendant(int node, int *child_l, int *child_r, int *lowest_desc) {
   const int left = child_l[node],
             right = child_r[node];
   int lowest_left, lowest_right;
-  if (left < *root_node) {
-    lowest_left = left;
-  } else {
-    lowest_left = lowest_desc[left - *root_node]; 
-  }
+  lowest_left = lowest_desc[left - 1];
   if (!lowest_left) {
-    lowest_left = lowest_descendant(left - *root_node, child_l, child_r, 
-                                    root_node, lowest_desc);
+    lowest_left = lowest_descendant(left, child_l, child_r, lowest_desc);
   }
   
-  if (right < *root_node) {
-    lowest_right = right;
-  } else {
-    lowest_right = lowest_desc[right - *root_node];
-  }
+  lowest_right = lowest_desc[right - 1];
   if (!lowest_right) {
-    lowest_right = lowest_descendant(right - *root_node, child_l, child_r,
-                                     root_node, lowest_desc);
+    lowest_right = lowest_descendant(right, child_l, child_r, lowest_desc);
   }
   
-  return(lowest_left < lowest_right ? lowest_left : lowest_right);
+  lowest_desc[node - 1] = lowest_left < lowest_right ? 
+                          lowest_left : lowest_right;
+  return(lowest_desc[node - 1]);
 }
-  
+
 static R_NativePrimitiveArgType order_left_lowest_t[] = {
   INTSXP, INTSXP, INTSXP
 };
 extern void order_left_lowest(int *parent, int *child, const int *n_edge)
 {
-  int i, queue_pos = 0, o_node, next_node;
+  int i, queue_pos = 0, o_node, next_node, tmp;
   const int n_node = *n_edge / 2;
   const int n_allnodes = *n_edge + 1, root_node = n_node + 2;
   int * start_p = calloc(*n_edge, sizeof(int)), /* calloc zero-initializes */
@@ -154,7 +145,7 @@ extern void order_left_lowest(int *parent, int *child, const int *n_edge)
       * child_r = calloc( n_node, sizeof(int)),
       * queue_p = calloc( n_node, sizeof(int)),
       * queue_c = calloc( n_node, sizeof(int)),
-      * lowest_desc = calloc(n_node, sizeof(int)),
+      * lowest_desc = calloc(n_allnodes, sizeof(int)),
       * renumber = calloc(n_allnodes, sizeof(int));
     if (queue_c == NULL) report_calloc_error(); 
     /* If queue_c has calloc'ed, presume other callocs were successful too */
@@ -171,8 +162,20 @@ extern void order_left_lowest(int *parent, int *child, const int *n_edge)
       }
     }
     
-    if (1 != lowest_descendant(0, child_l, child_r, &root_node, lowest_desc)) {
+    for (i = 1; i < root_node; i++) {
+      lowest_desc[i - 1] = i;
+    }
+    
+    if (1 != lowest_descendant(0, child_l, child_r, lowest_desc)) {
       Rprintf("Error finding lowest descendant");
+    }
+    
+    for (i = 0; i < n_node; i++) {
+      if (lowest_desc[child_r[i] - 1] < lowest_desc[child_l[i] - 1]) {
+        tmp = child_r[i];
+        child_r[i] = child_l[i];
+        child_l[i] = tmp;
+      }
     }
     
     o_node = root_node;

@@ -322,15 +322,16 @@ EdgesToForest <- function (edges) {
     attr(tree, 'score') <- attr(edges, 'score')
     ret <- tree
   }
+  ret
 }
 
 FindPeak <- function (tree, dataset, 
-                         InitializeData = PhyDat2Morphy,
-                         CleanUpData    = UnloadMorphy,
-                         TreeScorer     = MorphyLength,
-                         ProposedMoves  = RootedTBRSwapAll,
-                         followPlateau = TRUE,
-                         maxHits = 40L, verbosity = 1L, ...) {
+                      InitializeData = PhyDat2Morphy,
+                      CleanUpData    = UnloadMorphy,
+                      TreeScorer     = MorphyLength,
+                      ProposedMoves  = RootedTBRSwapAll,
+                      followPlateau = TRUE,
+                      maxHits = 40L, verbosity = 1L, ...) {
   # initialize tree and data
   if (dim(tree$edge)[1] != 2 * tree$Nnode) {
     stop("tree must be bifurcating; try rooting with ape::root")

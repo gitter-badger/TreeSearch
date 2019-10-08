@@ -9,7 +9,7 @@ extern void order_edges_number_nodes(int *parent, int *child, const int *n_edge)
 {
   int i, queue_pos = 0, o_node, next_node;
   const int n_node = *n_edge / 2;
-  const int n_allnodes = *n_edge + 1L, root_node = n_node + 2L;
+  const int n_allnodes = *n_edge + 1, root_node = n_node + 2;
   int * start_p = calloc(*n_edge, sizeof(int)), /* calloc zero-initializes */
       * start_c = calloc(*n_edge, sizeof(int)),
       * child_l = calloc( n_node, sizeof(int)),

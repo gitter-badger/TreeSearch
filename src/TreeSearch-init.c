@@ -54,8 +54,9 @@ static const R_CallMethodDef callMethods[] = {
   {"RANDOM_TREE",                   (DL_FUNC) &RANDOM_TREE, 1},
   {"RANDOM_TREE_SCORE",             (DL_FUNC) &RANDOM_TREE_SCORE, 2},
 
-  {"RENUMBER_TREE",  (DL_FUNC) &RENUMBER_TREE,  3},
-  {"RENUMBER_EDGES", (DL_FUNC) &RENUMBER_EDGES, 3},
+  {"RENUMBER_TREE",             (DL_FUNC) &RENUMBER_TREE,  3},
+  {"RENUMBER_TREE_LEFT_LOWEST", (DL_FUNC) &RENUMBER_TREE_LEFT_LOWEST, 3},
+  {"RENUMBER_EDGES",            (DL_FUNC) &RENUMBER_EDGES, 3},
   {NULL, NULL, 0}
 };
 

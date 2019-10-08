@@ -45,6 +45,13 @@ RenumberTree <- function (parent, child, nEdge = length(parent)) {
                as.integer(nEdge)), ncol = 2)
 }
 
+#' @describeIn RenumberTree Rotate each node such that the lowest tip is on 
+#' the left branch.  Each unique topology will then have a unique edge numbering.
+RenumberTreeStrict <- function (parent, child, nEdge = length(parent)) {
+  matrix(.Call('RENUMBER_TREE_LEFT_LOWEST', as.integer(parent),
+               as.integer(child), as.integer(nEdge)), ncol = 2)
+}
+
 #' @describeIn RenumberTree Instead returns a list containing two items
 #'  corresponding to the new parent and child vectors
 #' @family C wrappers

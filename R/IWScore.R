@@ -88,7 +88,7 @@ IWInitMorphy <- function (dataset) {
 #' @template concavityParam
 #' @export
 IWTreeSearch <- function (tree, dataset, concavity = 10, 
-                          EdgeSwapper = RootedTBR,
+                          EdgeSwapper = RootedTBRSwap,
                           maxIter = 100L, maxHits = 20L,
                           verbosity = 1, ...) {
   if (class(dataset) != 'phyDat') {

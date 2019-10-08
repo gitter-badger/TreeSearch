@@ -70,7 +70,8 @@ RearrangeEdges <- function (parent, child, dataset, TreeScorer = MorphyLength,
     }
     rearrangedEdges <- rearrangedEdges[[SampleOne(which(best), nBest)]]
   } else {
-    candidateScore <- TreeScorer(rearrangedEdges[[1]], rearrangedEdges[[2]], dataset, ...)
+    candidateScore <- TreeScorer(rearrangedEdges[[1]], rearrangedEdges[[2]],
+                                 dataset, ...)
     if (candidateScore > (scoreToBeat + eps)) {
       if (verbosity > 3L) {
         message("    . Iteration ", iter, ' - Rearranged tree score ',
@@ -83,7 +84,8 @@ RearrangeEdges <- function (parent, child, dataset, TreeScorer = MorphyLength,
                                   hits, " times.")
     } else {
       hits <- 1L
-      if (verbosity > 1L) message("    * Iteration ", iter, " - New best score ",
+      if (verbosity > 1L) message("    * Iteration ", iter, 
+                                  " - New best score ", 
                                   signif(candidateScore, 6), " found on ", hits,
                                   " trees.")
     }
@@ -100,7 +102,8 @@ RearrangeEdges <- function (parent, child, dataset, TreeScorer = MorphyLength,
 #' @template treeParam
 #' @template outgroupTipsParam
 #'                     
-#' @return A tree of class phylo, rooted on the smallest clade that contains the specified tips
+#' @return A tree of class phylo, rooted on the smallest clade that contains
+#'  the specified tips
 #' 
 #' @author Martin R. Smith
 #' @importFrom phangorn Ancestors Descendants
@@ -138,11 +141,13 @@ RootTree <- function (tree, outgroupTips) {
 #' @template treeParam
 #' @param nodes,edges Integer vector specifying the nodes or edges in the tree
 #'  to be dropped. 
-#' (Use \code{\link[ape]{nodelabels}} or \code{\link[ape:nodelabels]{edgelabels}} 
+#' (Use \code{\link[ape]{nodelabels}} or 
+#' \code{\link[ape:nodelabels]{edgelabels}} 
 #' to view numbers on a plotted tree.)
 #' 
 #' @return `tree`, with the specified nodes or edges collapsed.  
-#' The length of each dropped edge will (naively) be added to each descendant edge.
+#' The length of each dropped edge will (naively) be added to each descendant
+#'  edge.
 #' 
 #' @examples 
 #'   library(ape)
@@ -177,14 +182,18 @@ CollapseNode <- function (tree, nodes) {
   nodes <- unique(nodes)
   
   if (class(tree) != 'phylo') stop ("tree must be an object of class phylo")
-  if (!all(nodes %in% (root + 1L):maxNode)) stop("nodes must be integers between ",
-                                                 root + 1L, " and ", maxNode)
+  if (!all(nodes %in% (root + 1L):maxNode)) {
+    stop("nodes must be integers between ", root + 1L, " and ", maxNode)
+  }
   
   keptEdges <- -edgeBelow[nodes]
 
   for (node in rev(sort(nodes))) {
     newParent <- parent[edgeBelow[node]]
-    if (hasLengths) lengths[parent == node] <- lengths[parent == node] + lengths[child == node]
+    if (hasLengths) {
+      lengths[parent == node] <- lengths[parent == node] +
+        lengths[child == node]
+    }
     parent[parent == node] <- newParent
   }
   
@@ -215,5 +224,7 @@ CollapseEdge <- function (tree, edges) {
 #' @keywords internal
 #' @export
 StopUnlessBifurcating <- function (parent) {
-  if (!all(table(parent) == 2L)) stop ("Tree must be bifurcating; try collapse.singles or multi2di.")
+  if (!all(table(parent) == 2L)) {
+    stop ("Tree must be bifurcating; try collapse.singles or multi2di.")
+  }
 }

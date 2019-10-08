@@ -21,11 +21,12 @@ EdgeListSearch <- function (edgeList, dataset,
     }
   }
   if (verbosity > 0L) {
-    message("  - Performing tree search.  Initial score: ", bestScore)
+    message("  - Performing tree search.  Initial score: ", 
+            signif(bestScore, 7))
   }
   if (!is.null(stopAtScore) && bestScore < stopAtScore + epsilon) {
     if (verbosity > 0L) {
-      message("  - Aborting tree search as tree score ", bestScore, 
+      message("  - Aborting tree search as tree score ", signif(bestScore, 6), 
               " already below target of ", stopAtScore)
     }
     edgeList[[3]] <- bestScore
@@ -51,7 +52,8 @@ EdgeListSearch <- function (edgeList, dataset,
       if (verbosity > 1L) {
         message("    ! Iteration ", iter, 
                 " - No TBR rearrangement improves score. ",
-                scoreThisIteration, " doesn't beat ", bestScore)
+                signif(scoreThisIteration, 6), " doesn't beat ", 
+                signif(bestScore, 6))
       }
       break
     }
@@ -75,7 +77,7 @@ EdgeListSearch <- function (edgeList, dataset,
     }
   }
   if (verbosity > 0L) {
-    message("  - Final score ", bestScore, " found ", hits, " times after ",
+    message("  - Final score ", signif(bestScore, 7), " found ", hits, " times after ",
             iter, " rearrangements.", if (verbosity > 1L) '\n' else '')
   }
   
@@ -104,7 +106,7 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
     }
   }
   if (verbosity > 0L) {
-    message("  - Performing tree search.  Initial score: ", bestScore)
+    message("  - Performing tree search.  Initial score: ", signif(bestScore, 7))
   }
   nHits <- 1L
   nEdge <- dim(edgeMatrix)[1]
@@ -162,7 +164,8 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
           hits[, , nHits] <- candidates[, , i]
           
           if (verbosity > 2L) {
-            message('   - Score ', candidateScore, ' hit ', nHits, ' times.')
+            message('   - Score ', signif(candidateScore, 6), ' hit ',
+                    nHits, ' times.')
           }
           
           if (nHits >= maxHits) {
@@ -175,8 +178,8 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
         }
       } else {
         if (verbosity > 4L) {
-          message('   - Candidate score ', candidateScore, ' > ',
-                  bestScore)
+          message('   - Candidate score ', signif(candidateScore, 6), ' > ',
+                  signif(bestScore, 6))
         }
       }
     }
@@ -209,8 +212,8 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
   }
   
   if (verbosity > 0L) {
-    message("  - Final score ", bestScore, " found ", nHits, " times.",
-            if (verbosity > 1L) '\n' else '')
+    message("  - Final score ", signif(bestScore, 7), " found ",
+            nHits, " times.", if (verbosity > 1L) '\n' else '')
   }
   
   ret <- hits[, , !is.na(hits[1, 1, ]), drop = FALSE]
@@ -307,6 +310,20 @@ TreeSearch <- function (tree, dataset,
   tree 
 }
 
+EdgesToForest <- function (edges) {
+  if (dim(edges)[3] > 1L) {
+    ret <- structure(apply(edges, 3, function (edge) {
+      ret <- tree
+      ret$edge <- edge
+      ret
+    }), class='multiPhylo', score = attr(edges, 'score'))
+  } else {
+    tree$edge <- edges[, , 1]
+    attr(tree, 'score') <- attr(edges, 'score')
+    ret <- tree
+  }
+}
+
 FindPeak <- function (tree, dataset, 
                          InitializeData = PhyDat2Morphy,
                          CleanUpData    = UnloadMorphy,
@@ -332,18 +349,6 @@ FindPeak <- function (tree, dataset,
                            followPlateau = followPlateau,
                            verbosity = verbosity, ...)
   
-  if (dim(edges)[3] > 1L) {
-     ret <- structure(apply(edges, 3, function (edge) {
-        ret <- tree
-        ret$edge <- edge
-        ret
-      }), class='multiPhylo', score = attr(edges, 'score'))
-  } else {
-    tree$edge <- edges[, , 1]
-    attr(tree, 'score') <- attr(edges, 'score')
-    ret <- tree
-  }
-  
   # Return:
-  ret
+  EdgesToForest(edges)
 }

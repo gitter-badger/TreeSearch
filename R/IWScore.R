@@ -84,7 +84,7 @@ IWInitMorphy <- function (dataset) {
 }
 
 
-#' @describeIn TreeSearch Search using profile parsimony
+#' @describeIn TreeSearch Search using implied weights
 #' @template concavityParam
 #' @export
 IWTreeSearch <- function (tree, dataset, concavity = 10, 
@@ -108,4 +108,30 @@ IWTreeSearch <- function (tree, dataset, concavity = 10,
              EdgeSwapper = EdgeSwapper,
              maxIter = maxIter, maxHits = maxHits,
              verbosity = verbosity, ...)
+}
+
+#' @describeIn FindPeak Search using implied weights
+#' @template concavityParam
+#' @export
+IWFindPeak <-  function (tree, dataset, concavity = 10, 
+                         ProposedMoves = RootedTBRSwapAll,
+                         followPlateau = TRUE,
+                         maxHits = 20L, verbosity = 1, ...) {
+  if (class(dataset) != 'phyDat') {
+    stop("Unrecognized dataset class; should be phyDat, not ", 
+         class(dataset), '.')
+  }
+  if (!('min.length' %in% names(attributes(dataset)))) {
+    dataset <- PrepareDataIW(dataset)
+  }
+  at <- attributes(dataset)
+  
+  FindPeak(tree, dataset, nChar=at$nr, weight=at$weight,
+           minLength=at$min.length, concavity = concavity,
+           InitializeData = IWInitMorphy,
+           CleanUpData = IWDestroyMorphy,
+           TreeScorer = IWScoreMorphy,
+           ProposedMoves = ProposedMoves,
+           followPlateau = followPlateau,
+           maxHits = maxHits, verbosity = verbosity, ...)
 }

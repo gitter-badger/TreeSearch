@@ -17,8 +17,8 @@ extern void order_edges_number_nodes(int *parent, int *child, const int *n_edge)
       * queue_p = calloc( n_node, sizeof(int)),
       * queue_c = calloc( n_node, sizeof(int)),
       * renumber = calloc(n_allnodes, sizeof(int));
-  /* TODO check that calloc has returned a non-null pointer; 
-   clean-up and exit if calloc has failed */
+  if (queue_c == NULL) report_calloc_error(); 
+  /* If queue_c has calloc'ed, presume other callocs were successful too */
     
   for (i = 0; i < *n_edge; i++) {
     /* Initialize */

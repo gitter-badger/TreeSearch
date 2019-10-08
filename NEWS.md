@@ -1,3 +1,9 @@
+# TreeSearch 0.3.2.9100 (development)
+
+## New features
+
+- New algorithms for finding guaranteed local optima (`FindPeak`, `Ratchet2`)
+
 # TreeSearch 0.3.2.9008 (development)
 
 ## New features

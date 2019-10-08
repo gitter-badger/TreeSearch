@@ -7,7 +7,7 @@ static R_NativePrimitiveArgType order_edges_number_nodes_t[] = {
 };
 extern void order_edges_number_nodes(int *parent, int *child, const int *n_edge)
 {
-  int i, q_pos = 0, o_node, next_node;
+  int i, queue_pos = 0, o_node, next_node;
   const int n_node = *n_edge / 2;
   const int n_allnodes = *n_edge + 1L, root_node = n_node + 2L;
   int * start_p = calloc(*n_edge, sizeof(int)), /* calloc zero-initializes */
@@ -24,24 +24,24 @@ extern void order_edges_number_nodes(int *parent, int *child, const int *n_edge)
     /* Initialize */
     start_p[i] = parent[i];
     start_c[i] = child[i];
-    q_pos = parent[i] - root_node;
-    if (child_l[q_pos]) {
-      if (child_l[q_pos] < child[i] && child[i] > root_node) {
-        child_r[q_pos] = child[i];
+    queue_pos = parent[i] - root_node;
+    if (child_l[queue_pos]) {
+      if (child_l[queue_pos] < child[i] && child[i] > root_node) {
+        child_r[queue_pos] = child[i];
       } else {
-        child_r[q_pos] = child_l[q_pos];
-        child_l[q_pos] = child[i];
+        child_r[queue_pos] = child_l[queue_pos];
+        child_l[queue_pos] = child[i];
       }
     } else {
-      child_l[q_pos] = child[i];
+      child_l[queue_pos] = child[i];
     }
   }
   o_node = root_node;
-  q_pos = 0;
+  queue_pos = 0;
   for (i = 0; i < *n_edge; i++) {
     if (o_node < root_node) { /* We've just reached a tip */
-      parent[i] = queue_p[--q_pos];
-      child[i] = queue_c[q_pos];
+      parent[i] = queue_p[--queue_pos];
+      child[i] = queue_c[queue_pos];
       o_node = child[i];
     } else { /* We're at an internal node */
       parent[i] = o_node;

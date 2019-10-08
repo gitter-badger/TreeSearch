@@ -141,11 +141,15 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
   
   
   NotHitAlready <- function (candidates) {
-    actualHits <- hits[, , !is.na(hits[1, 1, ]), drop = FALSE]
-    alreadyHit <- apply(candidates, 3, function (cand) {
-      any(apply(hits, 3, identical, cand))
-    })
-    candidates[, , !alreadyHit]
+    dimCandidates <- dim(candidates)
+    nCandidates <- dimCandidates[3]
+    actualHits <- !is.na(hits[1, 1, ])
+    
+    priorHits <- duplicated(array(
+      c(candidates, hits[, , actualHits, drop = FALSE]),
+      dim = c(dimCandidates[1:2], nCandidates + sum(actualHits))),
+      MARGIN = 3L, fromLast = TRUE)[seq_len(nCandidates)]
+    candidates[, , !priorHits]
   }
   
   while (nHits < maxHits) {

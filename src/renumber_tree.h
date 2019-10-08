@@ -46,8 +46,8 @@ extern void order_edges_number_nodes(int *parent, int *child, const int *n_edge)
     } else { /* We're at an internal node */
       parent[i] = o_node;
       child[i]  = child_l[o_node - root_node];
-      queue_p[q_pos] = o_node;
-      queue_c[q_pos++] = child_r[o_node - root_node];
+      queue_p[queue_pos] = o_node;
+      queue_c[queue_pos++] = child_r[o_node - root_node];
       o_node = child_l[o_node - root_node];
     }
   }

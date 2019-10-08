@@ -13,29 +13,47 @@
 #' @references 
 #' - \insertRef{SmithTern}{TreeSearch}
 #'
-#' @return A tree that is optimal under a random sampling of the original characters
+#' @return A tree that is optimal under a random sampling of the original
+#' characters
 #' @export
 MorphyBootstrap <- function (edgeList, morphyObj, EdgeSwapper = NNISwap, 
-                             maxIter, maxHits, verbosity=1L, stopAtPeak=FALSE, stopAtPlateau=0L, ...) {
+                             maxIter, maxHits, verbosity=1L, stopAtPeak=FALSE,
+                             stopAtPlateau=0L, ...) {
   startWeights <- MorphyWeights(morphyObj)[1, ]
   eachChar <- seq_along(startWeights)
   deindexedChars <- rep(eachChar, startWeights)
-  resampling <- tabulate(sample(deindexedChars, replace=TRUE), length(startWeights))
+  resampling <- tabulate(sample(deindexedChars, replace=TRUE), 
+                         length(startWeights))
   errors <- vapply(eachChar, function (i) 
             mpl_set_charac_weight(i, resampling[i], morphyObj), integer(1))
+  
   if (any(errors)) {
-    stop ("Error resampling morphy object: ", mpl_translate_error(unique(errors[errors < 0L])))
+    stop ("Error resampling morphy object: ", 
+          mpl_translate_error(unique(errors[errors < 0L])))
+  }
+  
+  if (mpl_apply_tipdata(morphyObj) -> error) {
+    stop("Error applying tip data: ", mpl_translate_error(error))
+  }
+  
+  res <- EdgeListSearch(edgeList[1:2], morphyObj, EdgeSwapper = EdgeSwapper,
+                        maxIter = maxIter, maxHits = maxHits,
+                        stopAtPeak = stopAtPeak, stopAtPlateau = stopAtPlateau, 
+                        verbosity = verbosity - 1L, ...)
+  
+  errors <- vapply(eachChar, 
+                   function (i) mpl_set_charac_weight(i, startWeights[i],
+                                                      morphyObj), 
+                   integer(1))
+  if (any(errors)) {
+    stop ("Error resampling morphy object: ",
+          mpl_translate_error(unique(errors[errors < 0L])))
   }
   if (mpl_apply_tipdata(morphyObj) -> error) {
     stop("Error applying tip data: ", mpl_translate_error(error))
   }
   
-  res <- EdgeListSearch(edgeList[1:2], morphyObj, EdgeSwapper=EdgeSwapper, maxIter=maxIter, maxHits=maxHits,
-                        stopAtPeak=stopAtPeak, stopAtPlateau=stopAtPlateau, verbosity=verbosity-1L, ...)
-  errors <- vapply(eachChar, function (i) 
-         mpl_set_charac_weight(i, startWeights[i], morphyObj), integer(1))
-  if (any(errors)) stop ("Error resampling morphy object: ", mpl_translate_error(unique(errors[errors < 0L])))
-  if (mpl_apply_tipdata(morphyObj) -> error) stop("Error applying tip data: ", mpl_translate_error(error))
+  # Return:
   res[1:2]
 }
 
@@ -48,7 +66,8 @@ ProfileBootstrap <- function (edgeList, dataset, EdgeSwapper = NNISwap,
   startWeights <- att[['weight']]
   eachChar <- seq_along(startWeights)
   deindexedChars <- rep(eachChar, startWeights)
-  resampling <- tabulate(sample(deindexedChars, replace=TRUE), length(startWeights))
+  resampling <- tabulate(sample(deindexedChars, replace=TRUE), 
+                         length(startWeights))
   sampled <- resampling != 0
   sampledData <- lapply(dataset, function (x) x[sampled])
   sampledAtt <- att
@@ -58,18 +77,21 @@ ProfileBootstrap <- function (edgeList, dataset, EdgeSwapper = NNISwap,
   sampledAtt[['morphyObjs']] <- att[['morphyObjs']][sampled]
   attributes(sampledData) <- sampledAtt
   
-  res <- EdgeListSearch(edgeList[1:2], sampledData, TreeScorer=ProfileScoreMorphy,
-                        EdgeSwapper=EdgeSwapper, maxIter=maxIter, maxHits=maxHits,
-                        verbosity=verbosity-1L, ...)
+  res <- EdgeListSearch(edgeList[1:2], sampledData, 
+                        TreeScorer = ProfileScoreMorphy,
+                        EdgeSwapper = EdgeSwapper, maxIter = maxIter,
+                        maxHits = maxHits, verbosity = verbosity-1L, ...)
   
+  # Return:
   res[1:2]
 }
 
 #' @describeIn MorphyBootstrap Bootstrapper for Implied weighting
 #' @template concavityParam
 #' @export
-IWBootstrap <- function (edgeList, dataset, concavity = 10L, EdgeSwapper = NNISwap, 
-                              maxIter, maxHits, verbosity=1L, ...) {
+IWBootstrap <- function (edgeList, dataset, concavity = 10L,
+                         EdgeSwapper = NNISwap, maxIter, maxHits, 
+                         verbosity=1L, ...) {
   att <- attributes(dataset)
   startWeights <- att[['weight']]
   eachChar <- seq_along(startWeights)

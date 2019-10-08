@@ -57,6 +57,50 @@ MorphyBootstrap <- function (edgeList, morphyObj, EdgeSwapper = NNISwap,
   res[1:2]
 }
 
+MorphyBootstrapMatrix <- function (edgeMatrix, morphyObj, maxHits, 
+                                   TreeScorer = MorphyLength,
+                                   ProposedMoves = RootedTBRSwapAll,
+                                   followPlateau = FALSE,
+                                   verbosity=1L, ...) {
+  
+  startWeights <- MorphyWeights(morphyObj)[1, ]
+  eachChar <- seq_along(startWeights)
+  deindexedChars <- rep(eachChar, startWeights)
+  resampling <- tabulate(sample(deindexedChars, replace=TRUE), 
+                         length(startWeights))
+  errors <- vapply(eachChar, function (i) 
+    mpl_set_charac_weight(i, resampling[i], morphyObj), integer(1))
+  
+  if (any(errors)) {
+    stop ("Error resampling morphy object: ", 
+          mpl_translate_error(unique(errors[errors < 0L])))
+  }
+  
+  if (mpl_apply_tipdata(morphyObj) -> error) {
+    stop("Error applying tip data: ", mpl_translate_error(error))
+  }
+  
+  ret <- EdgeMatrixSearch(edgeMatrix, morphyObj, TreeScorer = TreeScorer,
+                          ProposedMoves = ProposedMoves, maxHits = maxHits,
+                          followPlateau = followPlateau, 
+                          verbosity = verbosity - 1L, ...)
+
+  errors <- vapply(eachChar, 
+                   function (i) mpl_set_charac_weight(i, startWeights[i],
+                                                      morphyObj), 
+                   integer(1))
+  if (any(errors)) {
+    stop ("Error resampling morphy object: ",
+          mpl_translate_error(unique(errors[errors < 0L])))
+  }
+  if (mpl_apply_tipdata(morphyObj) -> error) {
+    stop("Error applying tip data: ", mpl_translate_error(error))
+  }
+  
+  # Return:
+  ret
+}
+
 #' @describeIn MorphyBootstrap Bootstrapper for Profile Parsimony
 #' @template datasetParam
 #' @export
@@ -112,4 +156,34 @@ IWBootstrap <- function (edgeList, dataset, concavity = 10L,
                         verbosity=verbosity-1L)
   
   res[1:2]
+}
+
+#' @describeIn MorphyBootstrapMatrix Bootstrapper for Implied weighting
+#' @template concavityParam
+#' @export
+IWBootstrapMatrix <- function (edgeMatrix, dataset, concavity = 10L,
+                               maxHits, ProposedMoves = RootedTBRSwapAll,
+                               TreeScorer = IWScoreMorphy,
+                               followPlateau = FALSE, verbosity = 1L, ...) {
+  
+  att <- attributes(dataset)
+  startWeights <- att[['weight']]
+  eachChar <- seq_along(startWeights)
+  deindexedChars <- rep(eachChar, startWeights)
+  resampling <- tabulate(sample(deindexedChars, replace=TRUE), length(startWeights))
+  sampled <- resampling != 0
+  sampledData <- lapply(dataset, function (x) x[sampled])
+  sampledAtt <- att
+  sampledAtt[['weight']] <- resampling[sampled]
+  sampledAtt[['index']] <- rep(seq_len(sum(sampled)), resampling[sampled])
+  sampledAtt[['min.length']] <- minLength <- att[['min.length']][sampled] # Can probably delete but I'm too nervous to... MS, 2018-03-06
+  sampledAtt[['morphyObjs']] <- att[['morphyObjs']][sampled]
+  attributes(sampledData) <- sampledAtt
+  
+  # Return:
+  EdgeMatrixSearch(edgeMatrix, sampledData, TreeScorer = TreeScorer,,
+                   concavity = concavity, ProposedMoves = ProposedMoves, 
+                   maxHits = maxHits, followPlateau = followPlateau, 
+                   verbosity = verbosity - 1L, ...)
+  
 }

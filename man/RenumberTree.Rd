@@ -2,12 +2,15 @@
 % Please edit documentation in R/tree_numbering.R
 \name{RenumberTree}
 \alias{RenumberTree}
+\alias{RenumberTreeStrict}
 \alias{RenumberEdges}
 \title{Renumber a tree
 Order edges and number nodes
 Wrapper for the C function RENUMBER_TREE}
 \usage{
 RenumberTree(parent, child, nEdge = length(parent))
+
+RenumberTreeStrict(parent, child, nEdge = length(parent))
 
 RenumberEdges(parent, child, nEdge = length(parent))
 }
@@ -22,6 +25,9 @@ Wrapper for the C function RENUMBER_TREE
 }
 \section{Functions}{
 \itemize{
+\item \code{RenumberTreeStrict}: Rotate each node such that the lowest tip is on
+the left branch.  Each unique topology will then have a unique edge numbering.
+
 \item \code{RenumberEdges}: Instead returns a list containing two items
 corresponding to the new parent and child vectors
 }}

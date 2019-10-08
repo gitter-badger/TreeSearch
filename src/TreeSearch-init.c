@@ -19,6 +19,7 @@ extern SEXP _TreeSearch_phangorn_bipCPP(SEXP, SEXP);
 
 static const R_CMethodDef cMethods[] = {
   {"order_edges_number_nodes", (DL_FUNC) &order_edges_number_nodes, 3, order_edges_number_nodes_t},
+  {"order_left_lowest",        (DL_FUNC) &order_left_lowest, 3, order_left_lowest_t},
   {"ape_neworder_phylo",       (DL_FUNC) &ape_neworder_phylo, 6, ape_neworder_phylo_t},
   {"ape_node_depth",           (DL_FUNC) &ape_node_depth, 7, ape_node_depth_t},
   {"ape_neworder_pruningwise", (DL_FUNC) &ape_neworder_pruningwise, 6, ape_neworder_pruningwise_t},

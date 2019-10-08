@@ -7,8 +7,9 @@
 \alias{ProfileTreeSearch}
 \title{Search for most parsimonious trees}
 \usage{
-IWTreeSearch(tree, dataset, concavity = 10, EdgeSwapper = RootedTBR,
-  maxIter = 100L, maxHits = 20L, verbosity = 1, ...)
+IWTreeSearch(tree, dataset, concavity = 10,
+  EdgeSwapper = RootedTBRSwap, maxIter = 100L, maxHits = 20L,
+  verbosity = 1, ...)
 
 EdgeListSearch(edgeList, dataset, TreeScorer = MorphyLength,
   EdgeSwapper = RootedTBRSwap, maxIter = 100L, maxHits = 20L,
@@ -100,7 +101,7 @@ configuring tree search, see the
 }
 \section{Functions}{
 \itemize{
-\item \code{IWTreeSearch}: Search using profile parsimony
+\item \code{IWTreeSearch}: Search using implied weights
 
 \item \code{EdgeListSearch}: Tree Search from Edge lists
 

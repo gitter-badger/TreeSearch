@@ -61,7 +61,8 @@ in implied weighting. Defaults to 10; TNT sets a default of 3, but this
 is too low in some circumstances (Smith, 2019).}
 }
 \value{
-A tree that is optimal under a random sampling of the original characters
+A tree that is optimal under a random sampling of the original
+characters
 }
 \description{
 Ratchet bootstrapper

@@ -222,6 +222,140 @@ Ratchet <- function (tree, dataset,
   }
 }
 
+ABind <- function (array1, array2) {
+  array(c(array1, array2), dim = c(dim(array1)[1:2], 
+                                   dim(array1)[3] + dim(array2)[3]))
+}
+
+ABindUnique <- function (array1, array2) {
+  unique(ABind(array1, array2), MARGIN = 3L)
+}
+
+Ratchet2 <- function (tree, dataset, 
+                      InitializeData = PhyDat2Morphy,
+                      CleanUpData    = UnloadMorphy,
+                      TreeScorer     = MorphyLength,
+                      Bootstrapper   = MorphyBootstrapMatrix,
+                      ProposedMoves  = RootedTBRSwapAll,
+                      BootstrapSwapper = ProposedMoves,
+                      stopAtScore = NULL,
+                      
+                      ratchIter=100L, ratchHits=10L,
+                      searchHits=100L, bootstrapHits=searchHits,
+                      verbosity=1L, suboptimal=1e-08, ...) {
+  epsilon <- 1e-08
+  nHits <- 1L
+  # initialize tree and data
+  if (dim(tree$edge)[1] != 2 * tree$Nnode) {
+    stop("tree must be bifurcating; try rooting with ape::root and using
+         ape::collapse.singles")
+  }
+  tree <- RenumberTips(tree, names(dataset))
+  edgeList <- MatrixToList(tree$edge)
+  edgeList <- RenumberEdges(edgeList[[1]], edgeList[[2]])
+  hits <- array(unlist(edgeList), c(length(edgeList[[1]]), 2L, 1L))
+
+  initializedData <- InitializeData(dataset)
+  on.exit(initializedData <- CleanUpData(initializedData))
+  
+  bestScore <- if (is.null(attr(tree, 'score'))) {
+    TreeScorer(edgeList[[1]], edgeList[[2]], initializedData, ...)
+  } else {
+    attr(tree, 'score')
+  }
+  if (verbosity > 0L) {
+    message("* Beginning Parsimony Ratchet, with initial score ", 
+            signif(bestScore, 7),
+            if (!is.null(stopAtScore)) "; will stop at score " else '.',
+            stopAtScore)
+  }
+  if (!is.null(stopAtScore) && bestScore < stopAtScore + epsilon) {
+    if (verbosity > 1L) {
+      message("*** Target score of ", stopAtScore, " met.")
+    }
+    return(tree)
+  }
+  
+  iterationsWithBestScore <- 0
+  
+  for (i in 1:ratchIter) {
+    if (verbosity > 1L) {
+      message("\n* Ratchet iteration ", i, '.')
+      if (verbosity > 2L) {
+        message(" - Generating new candidate tree by bootstrapping dataset.")
+      }
+    }
+    candidate <- Bootstrapper(hits[, , 1], initializedData,
+                              maxHits = bootstrapHits, 
+                              verbosity = verbosity - 2L, 
+                              TreeScorer = TreeScorer,
+                              ProposedMoves = BootstrapSwapper)#, ...)
+    candidate <- candidate[, , dim(candidate)[3]]
+    candScore <- 1e+08
+    
+    if (verbosity > 2L) {
+      message(" - Rearranging from new candidate tree:")
+    }
+    
+    candidate <- EdgeMatrixSearch(candidate, dataset = initializedData,
+                                  TreeScorer = TreeScorer, 
+                                  ProposedMoves = ProposedMoves,
+                                  maxHits = searchHits, 
+                                  verbosity = verbosity - 2L, ...)
+    candScore <- attr(candidate, 'score')
+  
+    if (!is.null(stopAtScore) && candScore < stopAtScore + epsilon) {
+      if (verbosity > 1L) {
+        message("  * Target score ", stopAtScore, 
+                " met; terminating tree search.")
+      }
+      bestScore <- candScore
+      
+      break
+    }
+    
+    if (verbosity > 2L) {
+      message("  - Rearranged candidate tree scored ", signif(candScore, 6))
+    }
+    
+    if ((candScore + epsilon) < bestScore) {
+      if (verbosity > 1L) {
+        message(" - New best score ", signif(candScore, 6), ' hit ', 
+                dim(candidate)[3], ' times')
+      }
+      # New 'best' tree
+      hits <- candidate
+      bestScore <- candScore
+      iterationsWithBestScore <- 1L
+    } else if (bestScore + epsilon > candScore) {
+        # i.e. best == cand, allowing for floating point error
+      iterationsWithBestScore <- iterationsWithBestScore + 1L
+      if (verbosity > 2L) {
+        message("   - Best score found again (", iterationsWithBestScore, '/',
+                ratchHits, ' replications)')
+      }
+      hits <- ABindUnique(candidate, hits)
+    }
+    if (verbosity > 1L) {
+      message("* Best score after ", i, "/", ratchIter, 
+              " ratchet iterations: ", signif(bestScore), " (hit ", 
+              iterationsWithBestScore, "/", ratchHits, ")\n")
+    }
+    if ((!is.null(stopAtScore) && bestScore < stopAtScore + epsilon) 
+    || (iterationsWithBestScore >= ratchHits)) {
+      break
+    }
+  } # end for
+
+  if (verbosity > 0L) {
+    message("Completed parsimony ratchet after ", i, " iterations with score ",
+            signif(bestScore, 7), "\n")
+  }
+  
+  # Return:
+  EdgesToForest(hits)
+}
+
 #' @describeIn Ratchet Shortcut for Ratchet search under Profile Parsimony
 #' @export
 ProfileRatchet <- function (tree, dataset,
@@ -274,6 +408,27 @@ IWRatchet <- function (tree, dataset, concavity = 10,
           searchIter=searchIter, searchHits=searchHits,
           bootstrapIter=searchIter, bootstrapHits=bootstrapHits, 
           verbosity=verbosity, ...)
+}
+#' @describeIn Ratchet2 Shortcut for Ratchet search using implied weights
+#' @template concavityParam
+#' @export
+IWRatchet2 <- function (tree, dataset, concavity = 10,
+                        ProposedMoves = RootedTBRSwapAll,
+                        BootstrapSwapper = ProposedMoves,
+                        stopAtScore = NULL,
+                        ratchIter = 100L, ratchHits = 10L,
+                        searchHits = 100L, bootstrapHits = searchHits,
+                        verbosity = 1L, suboptimal = 1e-08, ...) {
+  dataset <- PrepareDataIW(dataset)
+  if (verbosity > 1L) {
+    message("* Using implied weighting with concavity constant k = ", concavity)
+  }
+  
+  Ratchet2(tree, dataset, concavity = concavity,
+           InitializeData = IWInitMorphy, CleanUpData = IWDestroyMorphy,
+           TreeScorer = IWScoreMorphy, Bootstrapper = IWBootstrapMatrix,
+           ProposedMoves = ProposedMoves, BootstrapSwapper = BootstrapSwapper,
+           minLength = attr(dataset, 'min.length'))
 }
 
 #' Unique trees (ignoring 'hits' attribute)

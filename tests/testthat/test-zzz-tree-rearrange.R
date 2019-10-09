@@ -175,6 +175,41 @@ test_that("TBR move lister works", {
 
 })
 
+test_that('RootedTBRSwapAll returns all moves', {
+  tree <- tree6
+  edge <- tree6$edge
+  parent <- edge[, 1]
+  child <- edge[, 2]
+  allTbrSwaps <- RootedTBRSwapAll(parent, child, 10L)
+  
+  tbrSwaps <- c(
+    # Move A:
+    '(((a, b), (c, d)), (e, f));',
+    '((b, (a, (c, d))), (e, f));',
+    '((b, (d, (a, c))), (e, f));',
+    '((b, (c, (a, d))), (e, f));',
+    # Move B:
+    '((a, (c, (b, d))), (e, f));',
+    '((a, (d, (b, c))), (e, f));',
+    # Move C:
+    '(((a, c), (b, d)), (e, f));',
+    # Move D:
+    '(((a, d), (b, c)), (e, f));'
+  )
+  nSwaps <- length(tbrSwaps)
+  tbrSwaps <- vapply(tbrSwaps, function (text) {
+    edge <- RenumberTips(read.tree(text=text), letters[1:6])$edge
+    RenumberTreeStrict(edge[, 1], edge[, 2])
+  }, edge)
+  
+  expect_equal(dim(tbrSwaps), dim(allTbrSwaps))
+  expect_equal(!logical(nSwaps),
+               as.logical(duplicated(BindArrays(tbrSwaps, allTbrSwaps),
+                                     MARGIN = 3, fromLast = TRUE)
+                          [seq_len(nSwaps)]))
+  
+})
+
 test_that("CollapseNodes works", {
   
   expect_error(CollapseNode(1:5, tree8))

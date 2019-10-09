@@ -151,75 +151,76 @@ extern void order_left_lowest(int *parent, int *child, const int *n_edge)
       * queue_c = calloc( n_node, sizeof(int)),
       * lowest_desc = calloc(n_allnodes, sizeof(int)),
       * renumber = calloc(n_allnodes, sizeof(int));
-    if (queue_c == NULL) report_calloc_error(); 
-    /* If queue_c has calloc'ed, presume other callocs were successful too */
-    
-    for (i = 0; i < *n_edge; i++) {
-      /* Initialize */
-      start_p[i] = parent[i];
-      start_c[i] = child[i];
-      queue_pos = parent[i] - root_node;
-      if (child_l[queue_pos]) {
-        child_r[queue_pos] = child[i];
-      } else {
-        child_l[queue_pos] = child[i];
-      }
-    }
-    
-    for (i = 1; i < root_node; i++) {
-      lowest_desc[i - 1] = i;
-    }
-    
-    if (1 != lowest_descendant(root_node, child_l, child_r, &root_node,
-                               lowest_desc)) {
-      Rprintf("Error finding lowest descendant\n");
-    }
-    
-    for (i = 0; i < n_node; i++) {
-      if (lowest_desc[child_r[i] - 1] < lowest_desc[child_l[i] - 1]) {
-        tmp = child_r[i];
-        child_r[i] = child_l[i];
-        child_l[i] = tmp;
-      }
-    }
-    
-    o_node = root_node;
-    queue_pos = 0;
-    for (i = 0; i < *n_edge; i++) {
-      if (o_node < root_node) { /* We've just reached a tip */
-       parent[i] = queue_p[--queue_pos];
-        child[i] = queue_c[queue_pos];
-        o_node = child[i];
-      } else { /* We're at an internal node */
-      parent[i] = o_node;
-        child[i]  = child_l[o_node - root_node];
-        queue_p[queue_pos] = o_node;
-        queue_c[queue_pos++] = child_r[o_node - root_node];
-        o_node = child_l[o_node - root_node];
-      }
-    }
-    free(start_p);
-    free(start_c);
-    free(child_l);
-    free(child_r);
-    free(queue_p);
-    free(queue_c);
-    
-    /* Now number nodes: */
-    if (renumber != NULL) {
-      next_node = root_node;
-      for (i = 0; i < n_allnodes; i++) renumber[i] = i + 1;
-      for (i = 0; i < *n_edge; i++) {
-        if (child[i] > root_node) renumber[child[i]-1] = ++(next_node);
-      }
-      for (i = 0; i < *n_edge; i++) {
-        parent[i] = renumber[parent[i]-1L];
-        child[i] = renumber[child[i]-1L];
-      }
-      free(renumber);
+  if (queue_c == NULL) report_calloc_error(); 
+  /* If queue_c has calloc'ed, presume other callocs were successful too */
+  
+  for (i = 0; i < *n_edge; i++) {
+    /* Initialize */
+    start_p[i] = parent[i];
+    start_c[i] = child[i];
+    queue_pos = parent[i] - root_node;
+    if (child_l[queue_pos]) {
+      child_r[queue_pos] = child[i];
     } else {
-      report_calloc_error();
+      child_l[queue_pos] = child[i];
     }
+  }
+  
+  for (i = 1; i < root_node; i++) {
+    lowest_desc[i - 1] = i;
+  }
+  
+  if (1 != lowest_descendant(root_node, child_l, child_r, &root_node,
+                             lowest_desc)) {
+    Rprintf("Error finding lowest descendant\n");
+    return;
+  }
+  
+  for (i = 0; i < n_node; i++) {
+    if (lowest_desc[child_r[i] - 1] < lowest_desc[child_l[i] - 1]) {
+      tmp = child_r[i];
+      child_r[i] = child_l[i];
+      child_l[i] = tmp;
+    }
+  }
+  
+  o_node = root_node;
+  queue_pos = 0;
+  for (i = 0; i < *n_edge; i++) {
+    if (o_node < root_node) { /* We've just reached a tip */
+      parent[i] = queue_p[--queue_pos];
+      child[i] = queue_c[queue_pos];
+      o_node = child[i];
+    } else { /* We're at an internal node */
+      parent[i] = o_node;
+      child[i] = child_l[o_node - root_node];
+      queue_p[queue_pos] = o_node;
+      queue_c[queue_pos++] = child_r[o_node - root_node];
+      o_node = child_l[o_node - root_node];
+    }
+  }
+  free(start_p);
+  free(start_c);
+  free(child_l);
+  free(child_r);
+  free(queue_p);
+  free(queue_c);
+  
+  /* Now number nodes: */
+  if (renumber != NULL) {
+    next_node = root_node;
+    for (i = 0; i < n_allnodes; i++) renumber[i] = i + 1;
+    for (i = 0; i < *n_edge; i++) {
+      if (child[i] > root_node) renumber[child[i]-1] = ++(next_node);
+    }
+    for (i = 0; i < *n_edge; i++) {
+      parent[i] = renumber[parent[i]-1L];
+      child[i] = renumber[child[i]-1L];
+    }
+    free(renumber);
+  } else {
+    report_calloc_error();
+  }
 }
 
 extern SEXP RENUMBER_TREE_LEFT_LOWEST(SEXP parent, SEXP child, SEXP ned) {

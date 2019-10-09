@@ -422,7 +422,9 @@ RootedTBRSwapAll <- function (parent, child, nEdge = length(parent)) {
     
     mergeEdges <- which(subtreeEdges & !nearBrokenEdge)
     
-    ret[[i]] <- lapply(mergeEdges, function (mergeEdge) {
+    retI <- vector('list', length(mergeEdges))
+    for (j in seq_along(mergeEdges)) {
+      mergeEdge <- mergeEdges[j]
       if (edgesOnAdriftSegment[mergeEdge]) {
         adriftReconnectionEdge <- mergeEdge
         if (nearBrokenEdge[mergeEdge]) {
@@ -431,7 +433,7 @@ RootedTBRSwapAll <- function (parent, child, nEdge = length(parent)) {
           samplable <- which(subtreeEdges & !edgesOnAdriftSegment)
         }
         nSamplable <- length(samplable)
-        vapply(samplable, function (rootedReconnectionEdge) 
+        retI[[j]] <- vapply(samplable, function (rootedReconnectionEdge) 
           TBRTree(adriftReconnectionEdge = adriftReconnectionEdge, 
                   rootedReconnectionEdge = rootedReconnectionEdge,
                   parent, child, nEdge,
@@ -454,7 +456,7 @@ RootedTBRSwapAll <- function (parent, child, nEdge = length(parent)) {
           return(TBRWarning(parent, child, 
             "No reconnection site would modify the tree; check mergeEdge"))
         }
-        vapply(samplable, function (adriftReconnectionEdge)
+        retI[[j]] <- vapply(samplable, function (adriftReconnectionEdge)
           TBRTree(adriftReconnectionEdge = adriftReconnectionEdge,
                   rootedReconnectionEdge = rootedReconnectionEdge,
                   parent, child, nEdge,
@@ -465,7 +467,8 @@ RootedTBRSwapAll <- function (parent, child, nEdge = length(parent)) {
                   brokenEdgeSister, 
                   brokenEdgeParent), blankEdges)
       }
-    })
+    }
+    ret[[i]] <- retI
   }
   # Return:
   NestedTreeListToArray(ret, nEdge)

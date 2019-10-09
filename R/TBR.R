@@ -240,7 +240,7 @@ TBRTree <- function (adriftReconnectionEdge, rootedReconnectionEdge,
     }
   }
   #  Return:
-  matrix(unlist(RenumberEdges(parent, child, nEdge)), ncol = 2L)
+  c(parent, child)
 }
 
 ## TODO Do edges need to be pre-ordered before coming here?
@@ -353,12 +353,12 @@ NestedTreeListToArray <- function (edgeList, nEdge) {
                              unlisted[entry + children], nEdge)
   }) # Not vapply: we want a list for faster unique
   ret <- unique(ret)
-  ret <- array(ret, c(nEdge, 2L, length(ret)))
+  ret <- vapply(ret, matrix, nEdge, 2L, FUN.VALUE = matrix(0L, nEdge, 2L))
   # Return:
   ret
 }
 
-#' @describeIn TBR eturn all edgelists that are one TBR move away but preserve
+#' @describeIn TBR Return all edgelists that are one TBR move away but preserve
 #' the position of the root, as arrays
 #' @export
 RootedTBRSwapAll <- function (parent, child, nEdge = length(parent)) {

@@ -345,11 +345,13 @@ UniqueSlice <- function (x, nSlice = dim(x)[3]) {
 NestedTreeListToArray <- function (edgeList, nEdge) {
   unlisted <- unlist(edgeList)
   nEntries <- length(unlisted) / nEdge / 2L
-  ret <- array(unlisted, dim = c(nEdge, 2L, nEntries))
-  ret <- lapply(
-    seq_len(nEntries), function (entry) {
-      RenumberTreeStrictVector(ret[, 1, entry], ret[, 2, entry], nEdge)
-    })
+  parents <- seq_len(nEdge)
+  children <- nEdge + parents
+  
+  ret <- lapply((seq_len(nEntries) - 1L) * nEdge * 2L, function (entry) {
+    RenumberTreeStrictVector(unlisted[entry + parents], 
+                             unlisted[entry + children], nEdge)
+  }) # Not vapply: we want a list for faster unique
   ret <- unique(ret)
   ret <- array(ret, c(nEdge, 2L, length(ret)))
   # Return:

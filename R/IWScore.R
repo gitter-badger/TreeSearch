@@ -115,7 +115,7 @@ IWTreeSearch <- function (tree, dataset, concavity = 10,
 #' @export
 IWFindPeak <-  function (tree, dataset, concavity = 10, 
                          ProposedMoves = RootedTBRSwapAll,
-                         followPlateau = TRUE,
+                         maxQueue = 1e06,
                          maxHits = 20L, verbosity = 1, ...) {
   if (class(dataset) != 'phyDat') {
     stop("Unrecognized dataset class; should be phyDat, not ", 
@@ -132,6 +132,5 @@ IWFindPeak <-  function (tree, dataset, concavity = 10,
            CleanUpData = IWDestroyMorphy,
            TreeScorer = IWScoreMorphy,
            ProposedMoves = ProposedMoves,
-           followPlateau = followPlateau,
-           maxHits = maxHits, verbosity = verbosity, ...)
+           maxQueue = maxQueue, maxHits = maxHits, verbosity = verbosity, ...)
 }

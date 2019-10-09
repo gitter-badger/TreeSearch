@@ -60,7 +60,7 @@ MorphyBootstrap <- function (edgeList, morphyObj, EdgeSwapper = NNISwap,
 MorphyBootstrapMatrix <- function (edgeMatrix, morphyObj, maxHits, 
                                    TreeScorer = MorphyLength,
                                    ProposedMoves = RootedTBRSwapAll,
-                                   followPlateau = FALSE,
+                                   maxQueue = 1e06,
                                    verbosity=1L, ...) {
   
   startWeights <- MorphyWeights(morphyObj)[1, ]
@@ -82,8 +82,7 @@ MorphyBootstrapMatrix <- function (edgeMatrix, morphyObj, maxHits,
   
   ret <- EdgeMatrixSearch(edgeMatrix, morphyObj, TreeScorer = TreeScorer,
                           ProposedMoves = ProposedMoves, maxHits = maxHits,
-                          followPlateau = followPlateau, 
-                          verbosity = verbosity - 1L, ...)
+                          maxQueue = maxQueue, verbosity = verbosity - 1L, ...)
 
   errors <- vapply(eachChar, 
                    function (i) mpl_set_charac_weight(i, startWeights[i],
@@ -164,7 +163,7 @@ IWBootstrap <- function (edgeList, dataset, concavity = 10L,
 IWBootstrapMatrix <- function (edgeMatrix, dataset, concavity = 10L,
                                maxHits, ProposedMoves = RootedTBRSwapAll,
                                TreeScorer = IWScoreMorphy,
-                               followPlateau = FALSE, verbosity = 1L, ...) {
+                               maxQueue = 1e06, verbosity = 1L, ...) {
   
   att <- attributes(dataset)
   startWeights <- att[['weight']]
@@ -183,7 +182,7 @@ IWBootstrapMatrix <- function (edgeMatrix, dataset, concavity = 10L,
   # Return:
   EdgeMatrixSearch(edgeMatrix, sampledData, TreeScorer = TreeScorer,,
                    concavity = concavity, ProposedMoves = ProposedMoves, 
-                   maxHits = maxHits, followPlateau = followPlateau, 
+                   maxHits = maxHits, maxQueue = maxQueue, 
                    verbosity = verbosity - 1L, ...)
   
 }

@@ -88,23 +88,35 @@ EdgeListSearch <- function (edgeList, dataset,
   edgeList
 }
 
-#' @param followPlateau Logical: if `TRUE`, search all trees one TBR move away
-#' from any best-scoring tree; if `FALSE`, stop once a best tree has been found 
-#' and no immediate neighbours have a better score.
+#' Shuffle array by third dimension
+#' @param array three-dimensional array
+#' @author Martin R. Smith
+#' @keywords internal
+#' @export
+ShuffleArray <- function (array) array[, , sample(seq_len(dim(array)[3])), 
+                                       drop = FALSE]
+
+#' Bind slices of two arrays
+#' @param array1,array2 Three-dimensional arrays
+#' @return The two arrays, bound along dimension three
+#' @keywords internal
+#' @export
+BindArrays <- function(array1, array2, dim1 = dim(array1), sliceDim = dim1[1:2],
+                       slices1 = dim1[3], slices2 = dim(array2)[3]) {
+  array(c(array1, array2), c(sliceDim, slices1 + slices2))
+}
+
+#' @param maxQueue Integer specifying maximum number of candidate trees to 
+#' queue for analysis.  Higher numbers use more memory but ensure a more 
+#' comprehensive search.
 EdgeMatrixSearch <- function (edgeMatrix, dataset,
                               TreeScorer = MorphyLength,
                               ProposedMoves = RootedTBRSwapAll,
-                              maxHits = 40L, followPlateau = TRUE,
-                              bestScore=NULL, verbosity=1L, ...) {
+                              maxHits = 40L, maxQueue = 1e06, 
+                              verbosity=1L, ...) {
   epsilon <- 1e-07
-  if (is.null(bestScore)) {
-    attrScore <- attr(edgeMatrix, 'score')
-    if (is.null(attrScore)) {
-      bestScore <- TreeScorer(edgeMatrix[, 1], edgeMatrix[, 2], dataset, ...)
-    } else {
-      bestScore <- attrScore
-    }
-  }
+  bestScore <- TreeScorer(edgeMatrix[, 1], edgeMatrix[, 2], dataset, ...)
+  
   if (verbosity > 0L) {
     message("  - Performing tree search.  Initial score: ", signif(bestScore, 7))
   }
@@ -120,30 +132,40 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
     nCandidates <- dimCandidates[3]
     actualHits <- !is.na(hits[1, 1, ])
     
-    priorHits <- duplicated(array(
-      c(candidates, hits[, , actualHits, drop = FALSE]),
-      dim = c(dimCandidates[1:2], nCandidates + nHits)),
+    priorHits <- duplicated(BindArrays(
+      candidates, hits[, , actualHits, drop = FALSE],
+      sliceDim = dimCandidates[1:2], slices1 = nCandidates, slices2 = nHits),
       MARGIN = 3L, fromLast = TRUE)[seq_len(nCandidates)]
     candidates[, , !priorHits]
   }
   
+  NewCandidates <- function (edgeMatrix) {
+    candidates <- ProposedMoves(edgeMatrix[, 1], edgeMatrix[, 2], nEdge)
+    ShuffleArray(NotHitAlready(candidates))
+  }
+  candidates <- NewCandidates(edgeMatrix)
+  
+  
   while (nHits < maxHits) {
-    startTree <- hits[, , hitToExamine]
-    candidates <- ProposedMoves(startTree[, 1], startTree[, 2], nEdge)
-    candidates <- NotHitAlready(candidates)
-    
     nCandidates <- dim(candidates)[3]
-    if (verbosity > 3L) {
-      message('  - ', nCandidates, ' unvisited trees one TBR move away.')
+    if (nCandidates == 0) break
+    if (nCandidates > maxQueue) {
+      if (verbosity > 1L) {
+        message('  - Trimming overflowing queue to maxQueue = ', maxQueue)
+      }
+      candidates <- candidates[, , seq_len(maxQueue)]
     }
-    stuck <- TRUE
     
-    for (i in sample(seq_len(nCandidates))) {
+    if (verbosity > 3L) {
+      message('     ', nCandidates, ' unvisited trees in queue.', 
+              appendLF = FALSE)
+    }
+    
+    for (i in seq_len(nCandidates)) {
       candidateScore <- TreeScorer(candidates[, 1, i],candidates[, 2, i],
-                                   dataset, ...)
+                                   dataset)#, ...)
       
       if (candidateScore < bestScore + epsilon) {
-        stuck <- FALSE
         if (candidateScore + epsilon < bestScore) {
           
           bestScore <- candidateScore
@@ -154,7 +176,8 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
           hits <- nothingHit
           hits[, , 1] <- candidates[, , i]
           nHits <- 1L
-          hitToExamine <- 1L
+          candidates <- NewCandidates(hits[, , 1])
+          i <- 0 # In case we found a hit on the last candidate
           
           break
           
@@ -172,9 +195,14 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
             if (verbosity > 2L) {
               message("   - Reached maximum hits (maxHits = ", maxHits, ").")
             }
+            candidates <- array(dim = c(0, 0, 0))
             break
           }
           
+          candidates <- BindArrays(NewCandidates(candidates[, , i]),
+                                   candidates[, , -seq_len(i)])
+          i <- 0 # In case we found a hit on the last candidate
+          break
         }
       } else {
         if (verbosity > 4L) {
@@ -182,36 +210,16 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
             message('   - Candidate score ', signif(candidateScore, 6), ' > ',
                     signif(bestScore, 6))
           } else {
-            message('.', appendLF = FALSE)
+            if (i %% 20 == 0) message('.')
           }
         }
       }
     }
-    if (stuck) {
-      if (followPlateau) {
-        if (hitToExamine < nHits) {
-          if (verbosity > 2L) {
-            message("  - Result ", hitToExamine, " is locally optimal. ",
-                    "Continuing from result ", hitToExamine + 1L, "/",
-                    nHits)
-          }
-          hitToExamine <- hitToExamine + 1L
-        } else {
-          if (verbosity > 1L) {
-            message("  - All ", nHits, " best trees are locally optimal.")
-          }
-          
-          break  
-        }
-      } else {
-        
-        if (verbosity > 1L) {
-          message("  - Tree is locally optimal. ",
-                  "Stopping, as followPlateau = FALSE")
-        }
-        
-        break
+    if (i == nCandidates) {
+      if (verbosity > 1L) {
+        message("  - All ", nHits, " best trees are locally optimal.")
       }
+      break
     }
   }
   
@@ -334,8 +342,7 @@ FindPeak <- function (tree, dataset,
                       CleanUpData    = UnloadMorphy,
                       TreeScorer     = MorphyLength,
                       ProposedMoves  = RootedTBRSwapAll,
-                      followPlateau = TRUE,
-                      maxHits = 40L, verbosity = 1L, ...) {
+                      maxQueue = 1e06, maxHits = 40L, verbosity = 1L, ...) {
   # initialize tree and data
   if (dim(tree$edge)[1] != 2 * tree$Nnode) {
     stop("tree must be bifurcating; try rooting with ape::root")
@@ -346,10 +353,9 @@ FindPeak <- function (tree, dataset,
   initializedData <- InitializeData(dataset)
   on.exit(initializedData <- CleanUpData(initializedData))
   
-  bestScore <- attr(tree, 'score')
   edges <- EdgeMatrixSearch(edgeMatrix, initializedData, TreeScorer=TreeScorer,
                            ProposedMoves = ProposedMoves, maxHits = maxHits,
-                           followPlateau = followPlateau,
+                           maxQueue = maxQueue,
                            verbosity = verbosity, ...)
   
   # Return:

@@ -326,6 +326,19 @@ TBRSwapAll <- function(parent, child, nEdge = length(parent)) {
   NestedTreeListToArray(ret, nEdge)
 }
 
+#' Faster alternative to asplit(MARGIN = 3L)
+ListSlices <- function (x, nSlice = dim(x)[3]) {
+  temp <- vector('list', nSlice)
+  for (i in seq_len(nSlice)) temp[[i]] <- x[, , i] # Faster than lapply!
+  temp
+}
+
+#' Faster alternative to unique.array(MARGIN = 3L)
+UniqueSlice <- function (x, nSlice = dim(x)[3]) {
+  temp <- ListSlices(x, nSlice)
+  x[, , !duplicated.default(temp), drop = FALSE]
+}
+
 #' @keywords internal
 #' @author Martin R. Smith
 #' @export
@@ -333,11 +346,13 @@ NestedTreeListToArray <- function (edgeList, nEdge) {
   unlisted <- unlist(edgeList)
   nEntries <- length(unlisted) / nEdge / 2L
   ret <- array(unlisted, dim = c(nEdge, 2L, nEntries))
-  ret <- vapply(
+  ret <- lapply(
     seq_len(nEntries), function (entry) {
-      RenumberTreeStrict(ret[, 1, entry], ret[, 2, entry], nEdge)
-    }, matrix(0L, nEdge, 2L))
-  ret <- unique(ret, MARGIN = 3L)
+      RenumberTreeStrictVector(ret[, 1, entry], ret[, 2, entry], nEdge)
+    })
+  ret <- unique(ret)
+  ret <- array(ret, c(nEdge, 2L, length(ret)))
+  # Return:
   ret
 }
 

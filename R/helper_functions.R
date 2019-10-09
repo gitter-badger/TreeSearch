@@ -18,6 +18,9 @@ Assert <- function (statement) if (!statement) stop(deparse(statement), " is FAL
 ListToMatrix <- function (edgeList) matrix(c(edgeList[[1]], edgeList[[2]]), ncol=2)
 
 #' Edge matrix to edge list
+#' 
+#' Faster than calling [`asplit`].
+#' 
 #' @param edge edges in the matrix format used by \code{tree$edge}, where \code{tree} is a tree of class \code{phylo}
 #' @return tree edges in the format list(parent, child).
 #' @export

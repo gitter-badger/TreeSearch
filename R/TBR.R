@@ -385,7 +385,7 @@ RootedTBRSwapAll <- function (parent, child, nEdge = length(parent)) {
     subtreeWithRoot <- if (edgeInRight) rightTree else !rightTree
     subtreeEdges <- !rootEdges & subtreeWithRoot
     edgesCutAdrift <- DescendantEdges(edgeToBreak, parent, child, nEdge)
-    if (sum(edgesCutAdrift) < 3 || # the edge itself, and somewheres else
+    if (sum(edgesCutAdrift) < 3 && # the edge itself, and somewheres else
         sum(subtreeEdges, -edgesCutAdrift) < 3) next
     
     brokenEdge <- seq_along(parent) == edgeToBreak

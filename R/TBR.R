@@ -395,7 +395,7 @@ RootedTBRSwapAll <- function (parent, child, nEdge = length(parent)) {
   selectableEdges <- which(selectableEdges)
   nSelectable <- length(selectableEdges)
   ret <- vector('list', nSelectable)
-  blankEdges <- matrix(0L, nEdge, 2L)
+  blankEdges <- integer(nEdge + nEdge)
   
   for (i in seq_len(nSelectable)) {
     edgeToBreak <- selectableEdges[i]

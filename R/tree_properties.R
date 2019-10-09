@@ -92,6 +92,16 @@ EdgeAncestry <- function (edge, parent, child,
   ret
 }
 
+#' @describeIn EdgeAncestry Report the ancestors of each edge in the tree.  
+#' @param self Include each edge as its own ancestor?
+#' Assumes that edges are labelled in preorder.
+AllAncestralEdges <- function (parent, child, nEdge = length(parent), 
+                               self = FALSE) {
+  result <- t(AllDescendantEdges(parent, child, nEdge))
+  if (!self) diag(result) <- FALSE
+  result
+}
+
 #' Most Recent Common Ancestor
 #' @param tip1,tip2 Integer specifying index of tips whose most recent common 
 #' ancestor should be found.

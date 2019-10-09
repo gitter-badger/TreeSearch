@@ -200,7 +200,7 @@ TBRSwap <- function(parent, child, nEdge = length(parent),
 
 TBRTree <- function (adriftReconnectionEdge, rootedReconnectionEdge,
                      parent, child, nEdge, 
-                     edgeToBreak,
+                     edgeAncestors, edgeToBreak,
                      brokenEdge, breakingRootEdge, nearBrokenEdge,
                      brokenEdge.parentNode, brokenEdge.childNode,
                      brokenEdgeDaughters, brokenRootDaughters,
@@ -208,8 +208,8 @@ TBRTree <- function (adriftReconnectionEdge, rootedReconnectionEdge,
                      brokenEdgeParent
                      ) {
   if (!nearBrokenEdge[adriftReconnectionEdge]) {
-    edgesToInvert <- EdgeAncestry(adriftReconnectionEdge, parent, child, 
-                                  stopAt = edgeToBreak) & !brokenEdge
+    edgesToInvert <- edgeAncestors[adriftReconnectionEdge, ] &
+      !edgeAncestors[edgeToBreak, ] &!brokenEdge
     if (any(edgesToInvert)) {
       tmp <- parent[edgesToInvert]
       parent[edgesToInvert] <- child[edgesToInvert]
@@ -252,7 +252,8 @@ TBRSwapAll <- function(parent, child, nEdge = length(parent)) {
   allEdges <- seq_len(nEdge - 1L) + 1L # Only include one root edge
   not1 <- !logical(nEdge)
   not1[1] <- FALSE
-  blankEdges <- matrix(0L, nEdge, 2L)
+  blankEdges <- integer(nEdge + nEdge)
+  edgeAncestors <- AllAncestralEdges(parent, child, nEdge)
   ret <- vector('list', length(allEdges))
   
   #lapply(allEdges, function (edgeToBreak) { # Unclear why lapply doesn't work here
@@ -295,7 +296,7 @@ TBRSwapAll <- function(parent, child, nEdge = length(parent)) {
           TBRTree(adriftReconnectionEdge = adriftReconnectionEdge, 
                   rootedReconnectionEdge = rootedReconnectionEdge,
                   parent, child, nEdge,
-                  edgeToBreak,
+                  edgeAncestors, edgeToBreak,
                   brokenEdge, breakingRootEdge, nearBrokenEdge,
                   brokenEdge.parentNode, brokenEdge.childNode,
                   brokenEdgeDaughters, brokenRootDaughters,
@@ -313,7 +314,7 @@ TBRSwapAll <- function(parent, child, nEdge = length(parent)) {
           TBRTree(adriftReconnectionEdge = adriftReconnectionEdge,
                   rootedReconnectionEdge = rootedReconnectionEdge,
                   parent, child, nEdge,
-                  edgeToBreak,
+                  edgeAncestors, edgeToBreak,
                   brokenEdge, breakingRootEdge, nearBrokenEdge,
                   brokenEdge.parentNode, brokenEdge.childNode,
                   brokenEdgeDaughters, brokenRootDaughters,
@@ -396,6 +397,7 @@ RootedTBRSwapAll <- function (parent, child, nEdge = length(parent)) {
   nSelectable <- length(selectableEdges)
   ret <- vector('list', nSelectable)
   blankEdges <- integer(nEdge + nEdge)
+  edgeAncestors <- AllAncestralEdges(parent, child, nEdge)
   
   for (i in seq_len(nSelectable)) {
     edgeToBreak <- selectableEdges[i]
@@ -435,7 +437,7 @@ RootedTBRSwapAll <- function (parent, child, nEdge = length(parent)) {
           TBRTree(adriftReconnectionEdge = adriftReconnectionEdge, 
                   rootedReconnectionEdge = rootedReconnectionEdge,
                   parent, child, nEdge,
-                  edgeToBreak,
+                  edgeAncestors, edgeToBreak,
                   brokenEdge, breakingRootEdge = FALSE, nearBrokenEdge,
                   brokenEdge.parentNode, brokenEdge.childNode,
                   brokenEdgeDaughters, brokenRootDaughters,
@@ -458,7 +460,7 @@ RootedTBRSwapAll <- function (parent, child, nEdge = length(parent)) {
           TBRTree(adriftReconnectionEdge = adriftReconnectionEdge,
                   rootedReconnectionEdge = rootedReconnectionEdge,
                   parent, child, nEdge,
-                  edgeToBreak,
+                  edgeAncestors, edgeToBreak,
                   brokenEdge, breakingRootEdge = FALSE, nearBrokenEdge,
                   brokenEdge.parentNode, brokenEdge.childNode,
                   brokenEdgeDaughters, brokenRootDaughters,

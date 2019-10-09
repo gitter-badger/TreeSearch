@@ -156,9 +156,8 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
       candidates <- candidates[, , seq_len(maxQueue)]
     }
     
-    if (verbosity > 3L) {
-      message('     ', nCandidates, ' unvisited trees in queue.', 
-              appendLF = FALSE)
+    if (verbosity > 4L) {
+      message('     ', nCandidates, ' unvisited trees in queue.')
     }
     
     for (i in seq_len(nCandidates)) {
@@ -170,7 +169,8 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
           
           bestScore <- candidateScore
           if (verbosity > 1L) {
-            message('  - New best score: ', signif(bestScore))
+            message('  - New best score ', signif(bestScore), ' on candidate ',
+                    i, '/', nCandidates, '!')
           }
           
           hits <- nothingHit
@@ -188,7 +188,7 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
           
           if (verbosity > 2L) {
             message('   - Score ', signif(candidateScore, 6), ' hit ',
-                    nHits, ' times.')
+                    nHits, ' times on candidate ', i, '/', nCandidates, '.')
           }
           
           if (nHits >= maxHits) {

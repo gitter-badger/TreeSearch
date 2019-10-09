@@ -331,11 +331,13 @@ TBRSwapAll <- function(parent, child, nEdge = length(parent)) {
 #' @export
 NestedTreeListToArray <- function (edgeList, nEdge) {
   unlisted <- unlist(edgeList)
-  ret <- array(unlisted, dim = c(nEdge, 2L, length(unlisted) / nEdge / 2L))
-  ret <- apply(ret, 3L, 
-               function (edge) RenumberTreeStrict(edge[, 1], edge[, 2], nEdge))
-  ret <- unique(ret, MARGIN = 2L)
-  ret <- array(ret, dim = c(nEdge, 2L, dim(ret)[2]))
+  nEntries <- length(unlisted) / nEdge / 2L
+  ret <- array(unlisted, dim = c(nEdge, 2L, nEntries))
+  ret <- vapply(
+    seq_len(nEntries), function (entry) {
+      RenumberTreeStrict(ret[, 1, entry], ret[, 2, entry], nEdge)
+    }, matrix(0L, nEdge, 2L))
+  ret <- unique(ret, MARGIN = 3L)
   ret
 }
 

@@ -57,6 +57,14 @@ RenumberTreeStrict <- function (parent, child, nEdge = length(parent)) {
                as.integer(child), as.integer(nEdge)), ncol = 2)
 }
 
+#' @describeIn RenumberTree Returns a vector instead of a matrix.
+#' @keywords internal
+#' @export
+RenumberTreeStrictVector <- function (parent, child, nEdge = length(parent)) {
+  .Call('RENUMBER_TREE_LEFT_LOWEST',
+        as.integer(parent), as.integer(child), as.integer(nEdge))
+}
+
 #' @describeIn RenumberTree Instead returns a list containing two items
 #'  corresponding to the new parent and child vectors
 #' @keywords internal

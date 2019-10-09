@@ -141,7 +141,7 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
   
   NewCandidates <- function (edgeMatrix) {
     if (verbosity > 2L) {
-      message('   - Proposing moves... ', appendLF = FALSE)
+      message('      Proposing moves... ', appendLF = FALSE)
     }
     candidates <- ProposedMoves(edgeMatrix[, 1], edgeMatrix[, 2], nEdge)
     if (verbosity > 3L) {
@@ -197,7 +197,7 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
           hits[, , nHits] <- candidates[, , i]
           
           if (verbosity > 2L) {
-            message('   - Score ', signif(candidateScore, 6), ' hit ',
+            message('    - Score ', signif(candidateScore, 6), ' hit ',
                     nHits, ' times on candidate ', i, '/', nCandidates, '.')
           }
           

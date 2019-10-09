@@ -293,7 +293,7 @@ Ratchet2 <- function (tree, dataset,
                               maxHits = bootstrapHits, 
                               verbosity = verbosity - 2L, 
                               TreeScorer = TreeScorer,
-                              ProposedMoves = BootstrapSwapper)#, ...)
+                              ProposedMoves = BootstrapSwapper, ...)
     candidate <- candidate[, , dim(candidate)[3]]
     candScore <- 1e+08
     

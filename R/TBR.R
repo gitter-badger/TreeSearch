@@ -420,9 +420,11 @@ RootedTBRSwapAll <- function (parent, child, nEdge = length(parent)) {
     brokenEdgeSister <- parent == brokenEdge.parentNode & !brokenEdge
     
     brokenEdgeDaughters <- parent == brokenEdge.childNode
-    nearBrokenEdge <- brokenEdgeSister | brokenEdgeParent | brokenEdgeDaughters | brokenEdge
+    nearBrokenEdge <- brokenEdgeSister | brokenEdgeParent |
+      brokenEdgeDaughters | brokenEdge
     
     mergeEdges <- which(subtreeEdges & !nearBrokenEdge)
+    # TODO almost 50% of proposed moves are duplicates... which ones?
     
     ret[[i]] <- lapply(mergeEdges, function (mergeEdge) {
       if (edgesOnAdriftSegment[mergeEdge]) {

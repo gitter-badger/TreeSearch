@@ -140,8 +140,18 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
   }
   
   NewCandidates <- function (edgeMatrix) {
+    if (verbosity > 2L) {
+      message('   - Proposing moves... ', appendLF = FALSE)
+    }
     candidates <- ProposedMoves(edgeMatrix[, 1], edgeMatrix[, 2], nEdge)
-    ShuffleArray(NotHitAlready(candidates))
+    if (verbosity > 3L) {
+      message(dim(candidates)[3], ' moves proposed, ', appendLF = FALSE)
+    }
+    candidates <- ShuffleArray(NotHitAlready(candidates))
+    if (verbosity > 2L) {
+      message(dim(candidates)[3], ' novel trees added to queue.')
+    }
+    candidates
   }
   candidates <- NewCandidates(edgeMatrix)
   
@@ -162,7 +172,7 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
     
     for (i in seq_len(nCandidates)) {
       candidateScore <- TreeScorer(candidates[, 1, i],candidates[, 2, i],
-                                   dataset)#, ...)
+                                   dataset, ...)
       
       if (candidateScore < bestScore + epsilon) {
         if (candidateScore + epsilon < bestScore) {

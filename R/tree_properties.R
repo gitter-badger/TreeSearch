@@ -72,8 +72,10 @@ AncestorEdge <- function (edge, parent, child) child == parent[edge]
 #' @param edge number of the edge whose child edges are required
 #' @template treeParent
 #' @template treeChild
-#' @param stopAt number of the edge at which the search should terminate; defaults to the root edges
-#' @return a logical vector stating whether each edge in turn is a descendant of the specified edge
+#' @param stopAt number of the edge at which the search should terminate;
+#'  defaults to the root edges
+#' @return a logical vector stating whether each edge in turn is an ancestor 
+#' of the specified edge
 #'
 #' @author Martin R. Smith
 #' @family tree navigation

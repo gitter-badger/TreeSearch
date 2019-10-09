@@ -342,18 +342,18 @@ NestedTreeListToArray <- function (edgeList, nEdge) {
 #' @describeIn TBR eturn all edgelists that are one TBR move away but preserve
 #' the position of the root, as arrays
 #' @export
-RootedTBRSwapAll <- function (parent, child, nEdge=length(parent)) {
+RootedTBRSwapAll <- function (parent, child, nEdge = length(parent)) {
   if (nEdge < 5) return (TBRWarning(parent, child, 'Fewer than 4 tips'))
   nTips <- (nEdge / 2L) + 1L
   rootNode <- parent[1]
   rootEdges <- parent == rootNode
   rightTree <- DescendantEdges(1, parent, child, nEdge)
   selectableEdges <- !rootEdges
-  if (sum( rightTree) < 4) {
-    selectableEdges[ rightTree] <- FALSE
-  } else if (sum( rightTree) < 6) {
+  if (sum(rightTree) < 4) {
+    selectableEdges[rightTree] <- FALSE
+  } else if (sum(rightTree) < 6) {
     rightChild <- child[1]
-    rightGrandchildEdges   <- parent==rightChild
+    rightGrandchildEdges   <- parent == rightChild
     rightGrandchildren     <- child[rightGrandchildEdges]
     rightGrandchildrenTips <- rightGrandchildren <= nTips
     selectableEdges[which(rightGrandchildEdges)[!rightGrandchildrenTips]] <- FALSE  
@@ -431,7 +431,10 @@ RootedTBRSwapAll <- function (parent, child, nEdge=length(parent)) {
           samplable <- which(subtreeEdges & edgesOnAdriftSegment)
         }
         nSamplable <- length(samplable)
-        if (nSamplable == 0) return(TBRWarning(parent, child, "No reconnection site would modify the tree; check mergeEdge"))
+        if (nSamplable == 0) {
+          return(TBRWarning(parent, child, 
+            "No reconnection site would modify the tree; check mergeEdge"))
+        }
         vapply(samplable, function (adriftReconnectionEdge)
           TBRTree(adriftReconnectionEdge = adriftReconnectionEdge,
                   rootedReconnectionEdge = rootedReconnectionEdge,
@@ -564,11 +567,16 @@ RootedTBRSwap <- function (parent, child, nEdge=length(parent), edgeToBreak=NULL
     edgeInRight <- rightTree[edgeToBreak]
     subtreeWithRoot <- if (edgeInRight) rightTree else !rightTree
     subtreeEdges <- !rootEdges & subtreeWithRoot
-    if (sum(edgesCutAdrift <- DescendantEdges(edgeToBreak, parent, child, nEdge)) > 2) break;
-    if (sum(subtreeEdges, -edgesCutAdrift) > 2) break; # the edge itself, and somewheres else
+    edgesCutAdrift <- DescendantEdges(edgeToBreak, parent, child, nEdge)
+    if (sum(edgesCutAdrift) > 2) {
+      break
+    }
+    if (sum(subtreeEdges, -edgesCutAdrift) > 2) {
+      # the edge itself, and somewheres else
+      break
+    }
     # TODO check that all expected selections are valid
     selectableEdges[edgeToBreak] <- FALSE
-    ###Assert(any(selectableEdges))
     edgeToBreak <- SampleOne(which(selectableEdges))
   }
   brokenEdge <- seq_along(parent) == edgeToBreak

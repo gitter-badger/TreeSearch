@@ -170,7 +170,7 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
           bestScore <- candidateScore
           if (verbosity > 1L) {
             message('  - New best score ', signif(bestScore), ' on candidate ',
-                    i, '/', nCandidates, '!')
+                    i, '/', nCandidates, '.')
           }
           
           hits <- nothingHit

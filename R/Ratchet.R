@@ -89,8 +89,10 @@ Ratchet <- function (tree, dataset,
     attr(tree, 'score')
   }
   if (verbosity > 0L) {
-    message("* Beginning Parsimony Ratchet, with initial score ", bestScore,
-            if (!is.null(stopAtScore)) "; will stop at score ", stopAtScore)
+    message("* Beginning Parsimony Ratchet, with initial score ", 
+            signif(bestScore),
+            if (!is.null(stopAtScore)) "; will stop at score " else '.',
+            stopAtScore)
   }
   if (!is.null(stopAtScore) && bestScore < stopAtScore + epsilon) {
     if (verbosity > 1L) {
@@ -149,7 +151,10 @@ Ratchet <- function (tree, dataset,
       break
     }
     
-    if (verbosity > 2L) message(" - Rearranged candidate tree scored ", candScore)
+    if (verbosity > 2L) {
+      message(" - Rearranged candidate tree scored ", 
+                                signif(candScore))
+    }
     if (returnAll && candScore < (bestScore + suboptimal)) { # Worth saving this tree in forest
       forest[[i]] <- candidate
       forestScores[i] <- candScore
@@ -165,7 +170,7 @@ Ratchet <- function (tree, dataset,
     }
     if (verbosity > 1L) {
       message("* Best score after ", i, "/", ratchIter, 
-              " ratchet iterations: ", bestScore, " (hit ", 
+              " ratchet iterations: ", signif(bestScore), " (hit ", 
               iterationsWithBestScore, "/", ratchHits, ")\n")
     }
     if ((!is.null(stopAtScore) && bestScore < stopAtScore + epsilon) 
@@ -424,10 +429,14 @@ IWRatchet2 <- function (tree, dataset, concavity = 10,
   }
   
   Ratchet2(tree, dataset, concavity = concavity,
+           ProposedMoves = ProposedMoves, BootstrapSwapper = BootstrapSwapper,
+           stopAtScore = stopAtScore, ratchIter = ratchIter, 
+           ratchHits = ratchHits, searchHits = searchHits,
+           bootstrapHits = bootstrapHits, verbosity = verbosity,
+           suboptimal = suboptimal,
            InitializeData = IWInitMorphy, CleanUpData = IWDestroyMorphy,
            TreeScorer = IWScoreMorphy, Bootstrapper = IWBootstrapMatrix,
-           ProposedMoves = ProposedMoves, BootstrapSwapper = BootstrapSwapper,
-           minLength = attr(dataset, 'min.length'), verbosity = verbosity)
+           minLength = attr(dataset, 'min.length'))
 }
 
 #' Unique trees (ignoring 'hits' attribute)

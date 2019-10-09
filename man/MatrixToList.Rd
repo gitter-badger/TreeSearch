@@ -13,5 +13,5 @@ MatrixToList(edge)
 tree edges in the format list(parent, child).
 }
 \description{
-Edge matrix to edge list
+Faster than calling \code{\link{asplit}}.
 }

@@ -3,6 +3,7 @@
 \name{RenumberTree}
 \alias{RenumberTree}
 \alias{RenumberTreeStrict}
+\alias{RenumberTreeStrictVector}
 \alias{RenumberEdges}
 \title{Renumber a tree
 Order edges and number nodes
@@ -12,11 +13,17 @@ RenumberTree(parent, child, nEdge = length(parent))
 
 RenumberTreeStrict(parent, child, nEdge = length(parent))
 
+RenumberTreeStrictVector(parent, child, nEdge = length(parent))
+
 RenumberEdges(parent, child, nEdge = length(parent))
 }
 \value{
-an edge matrix for a tree in following the usual preorder convention
-for edge and node numbering
+\itemize{
+\item \code{RenumberTree} and \code{RenumberTreeStrict} return an edge matrix for
+a tree following the usual preorder convention for edge and node numbering.
+\item \code{RenumberEdges} returns a list containing two items corresponding to the
+new parent and child vectors
+}
 }
 \description{
 Renumber a tree
@@ -27,6 +34,8 @@ Wrapper for the C function RENUMBER_TREE
 \itemize{
 \item \code{RenumberTreeStrict}: Rotate each node such that the lowest tip is on
 the left branch.  Each unique topology will then have a unique edge numbering.
+
+\item \code{RenumberTreeStrictVector}: Returns a vector instead of a matrix.
 
 \item \code{RenumberEdges}: Instead returns a list containing two items
 corresponding to the new parent and child vectors

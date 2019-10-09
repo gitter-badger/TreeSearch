@@ -13,7 +13,8 @@ RootTree(tree, outgroupTips)
 include in the outgroup.}
 }
 \value{
-A tree of class phylo, rooted on the smallest clade that contains the specified tips
+A tree of class phylo, rooted on the smallest clade that contains
+the specified tips
 }
 \description{
 Roots a tree on the smallest clade containing the specified tips.

@@ -15,10 +15,12 @@ EdgeAncestry(edge, parent, child, stopAt = (parent == min(parent)))
 \item{child}{the second column of the edge matrix of a tree of class
 \code{\link{phylo}}, i.e. \code{tree$edge[, 2]}}
 
-\item{stopAt}{number of the edge at which the search should terminate; defaults to the root edges}
+\item{stopAt}{number of the edge at which the search should terminate;
+defaults to the root edges}
 }
 \value{
-a logical vector stating whether each edge in turn is a descendant of the specified edge
+a logical vector stating whether each edge in turn is an ancestor
+of the specified edge
 }
 \description{
 Quickly identifies edges that are 'ancestral' to a particular edge in a tree

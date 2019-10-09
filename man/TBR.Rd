@@ -76,7 +76,7 @@ All nodes in a tree must be bifurcating; \link[ape:collapse.singles]{ape::collap
 
 \item \code{TBRSwapAll}: Return all edgelists that are one TBR move away, as arrays
 
-\item \code{RootedTBRSwapAll}: eturn all edgelists that are one TBR move away but preserve
+\item \code{RootedTBRSwapAll}: Return all edgelists that are one TBR move away but preserve
 the position of the root, as arrays
 
 \item \code{TBRMoves}: Possible TBR moves

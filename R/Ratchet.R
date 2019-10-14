@@ -254,6 +254,10 @@ Ratchet2 <- function (tree, dataset,
   epsilon <- 1e-08
   nHits <- 1L
   # initialize tree and data
+  if (class(tree) == 'multiPhylo') {
+    message('Input tree has class `multiPhylo`; using first entry only')
+    tree <- tree[[1]]
+  }
   if (dim(tree$edge)[1] != 2 * tree$Nnode) {
     stop("tree must be bifurcating; try rooting with ape::root and using
          ape::collapse.singles")

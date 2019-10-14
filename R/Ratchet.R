@@ -270,12 +270,12 @@ Ratchet2 <- function (tree, dataset,
   } else {
     attr(tree, 'score')
   }
-  if (verbosity > 0L) {
-    message("* Beginning Parsimony Ratchet, with initial score ", 
-            signif(bestScore, 7),
-            if (!is.null(stopAtScore)) "; will stop at score " else '.',
-            stopAtScore)
-  }
+  Report(verbosity, 0L, 
+         "Beginning Parsimony Ratchet, with initial score ", 
+          signif(bestScore, 7),
+          if (!is.null(stopAtScore)) "; will stop at score " else '.',
+          stopAtScore)
+  
   if (!is.null(stopAtScore) && bestScore < stopAtScore + epsilon) {
     if (verbosity > 1L) {
       message("*** Target score of ", stopAtScore, " met.")

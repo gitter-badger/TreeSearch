@@ -107,7 +107,7 @@ BindArrays <- function(array1, array2, dim1 = dim(array1), sliceDim = dim1[1:2],
 }
 
 #' Write log message
-Report <- function (level, ..., appendLF = TRUE, appendPrefix = TRUE) {
+Report <- function (verbosity, level, ..., appendLF = TRUE, appendPrefix = TRUE) {
   if (verbosity > level) { # TODO: Confirm that this really does look for 
     # verbosity in the parent enviroment as it ought to, rather than starting 
     # in the global environment
@@ -137,12 +137,12 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
                               proposalLimit = 20L,
                               verbosity = 1L, ...) {
   epsilon <- 1e-07
-  environment(Report) <- environment()
   limitProposals <- !is.null(proposalLimit)
   lastLimit <- 0L
   bestScore <- TreeScorer(edgeMatrix[, 1], edgeMatrix[, 2], dataset, ...)
   
-  Report(0L, "Performing tree search.  Initial score: ", signif(bestScore, 7))
+  Report(verbosity, 0L,
+         "Performing tree search.  Initial score: ", signif(bestScore, 7))
   nHits <- 1L
   nEdge <- dim(edgeMatrix)[1]
   nothingHit <- array(NA, dim = c(nEdge, 2L, maxHits))
@@ -163,18 +163,18 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
   }
   
   NewCandidates <- function (edgeMatrix) {
-    Report(4L, 'Requesting ', proposalLimit, if (!is.null(proposalLimit)) ' ',
-           'moves... ', appendLF = FALSE)
+    Report(verbosity, 4L, 'Requesting ', proposalLimit, 
+           if (!is.null(proposalLimit)) ' ', 'moves... ', appendLF = FALSE)
     
     candidates <- ProposedMoves(edgeMatrix[, 1], edgeMatrix[, 2], nEdge,
                                 sampleSize = proposalLimit)
     
-    Report(5L, dim(candidates)[3], ' moves proposed, ', 
+    Report(verbosity, 5L, dim(candidates)[3], ' moves proposed, ', 
            appendPrefix = FALSE, appendLF = FALSE)
     
     candidates <- ShuffleArray(NotHitAlready(candidates))
     
-    Report(4L, dim(candidates)[3], ' trees returned.',
+    Report(verbosity, 4L, dim(candidates)[3], ' trees returned.',
            appendPrefix = FALSE)
     
     candidates
@@ -189,7 +189,7 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
       lastLimit <- proposalLimit
       proposalLimit <- lastProposal + lastProposal
       
-      Report(4L, 'Increasing proposal limit from ', lastLimit, ' to ',
+      Report(verbosity, 4L, 'Increasing proposal limit from ', lastLimit, ' to ',
                 proposalLimit)
       
       candidates <- NewCandidates(hits[, , 1])
@@ -205,11 +205,11 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
     nCandidates <- dim(candidates)[3]
     if (nCandidates == 0) break
     if (nCandidates > maxQueue) {
-      Report(1L, 'Trimming overflowing queue to maxQueue = ', maxQueue)
+      Report(verbosity, 1L, 'Trimming overflowing queue to maxQueue = ', maxQueue)
       candidates <- candidates[, , seq_len(maxQueue)]
     }
     
-    Report(4L, nCandidates, ' unvisited trees in queue.')
+    Report(verbosity, 4L, nCandidates, ' unvisited trees in queue.')
     
     for (i in seq_len(nCandidates)) {
       candidateScore <- TreeScorer(candidates[, 1, i],candidates[, 2, i],
@@ -219,16 +219,16 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
         if (candidateScore + epsilon < bestScore) {
           
           bestScore <- candidateScore
-          Report(1L, 'New best score ', signif(bestScore), ' on candidate ',
+          Report(verbosity, 1L, 'New best score ', signif(bestScore), ' on candidate ',
                     i, '/', nCandidates, '.')
           
           if (limitProposals) {
-            Report(4L, 'Decreasing proposal limit from ',
+            Report(verbosity, 4L, 'Decreasing proposal limit from ',
                       proposalLimit, appendLF = FALSE)
             
             proposalLimit <- ceiling(proposalLimit / 2L)
             
-            Report(4L, ' to ', proposalLimit, appendPrefix = FALSE)
+            Report(verbosity, 4L, ' to ', proposalLimit, appendPrefix = FALSE)
             
             lastProposal <- dim(candidates)[3]
             newIteration <- TRUE
@@ -248,11 +248,11 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
           nHits <- nHits + 1L
           hits[, , nHits] <- candidates[, , i]
           
-          Report(2L, 'Score ', signif(candidateScore, 6), ' hit ',
+          Report(verbosity, 2L, 'Score ', signif(candidateScore, 6), ' hit ',
                     nHits, ' times on candidate ', i, '/', nCandidates, '.')
           
           if (nHits >= maxHits) {
-            Report(2L, "Reached maximum hits (maxHits = ", maxHits, ").")
+            Report(verbosity, 2L, "Reached maximum hits (maxHits = ", maxHits, ").")
             
             candidates <- array(dim = c(0, 0, 0))
             break
@@ -267,7 +267,7 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
       } else {
         if (verbosity > 4L) {
           if (verbosity > 8L) { 
-              Report(4L, 'Candidate score ', signif(candidateScore, 6), ' > ',
+            Report(verbosity, 4L, 'Candidate score ', signif(candidateScore, 6), ' > ',
                     signif(bestScore, 6))
           } else {
             if (i %% 20 == 0) message('     ...')
@@ -278,10 +278,10 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
     
     if (i == nCandidates) {
       if (!limitProposals) {
-        Report(1L, "All ", nHits, " best trees are locally optimal.")
+        Report(verbosity, 1L, "All ", nHits, " best trees are locally optimal.")
         break
       } else {
-        Report(3L, 'Completed batch of ', nCandidates, ' candidate trees.  ',
+        Report(verbosity, 3L, 'Completed batch of ', nCandidates, ' candidate trees.  ',
                if (newIteration) 'Getting next candidates from queue.' else 
                  'Generating more.')
       }

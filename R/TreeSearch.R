@@ -114,7 +114,7 @@ Report <- function (level, ..., appendLF = TRUE, appendPrefix = TRUE) {
     prefix <- if (appendPrefix) switch(as.character(level),
                      '0' = '',
                      '1' = ' - ',
-                     '2' = ' * ',
+                     '2' = ' . ',
                      '3' = '   - ',
                      '4' = '     > ',
                      '     . ') else ''

@@ -135,8 +135,9 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
                               ProposedMoves = RootedTBRSwapAll,
                               maxHits = 40L, maxQueue = 1e06,
                               proposalLimit = 20L,
-                              verbosity=1L, ...) {
+                              verbosity = 1L, ...) {
   epsilon <- 1e-07
+  environment(Report) <- environment()
   limitProposals <- !is.null(proposalLimit)
   lastLimit <- 0L
   bestScore <- TreeScorer(edgeMatrix[, 1], edgeMatrix[, 2], dataset, ...)
@@ -282,7 +283,7 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
       } else {
         Report(3L, 'Completed batch of ', nCandidates, ' candidate trees.  ',
                if (newIteration) 'Getting next candidates from queue.' else 
-                 'Generating new more.')
+                 'Generating more.')
       }
     }
     

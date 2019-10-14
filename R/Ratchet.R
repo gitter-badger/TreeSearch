@@ -246,26 +246,38 @@ Ratchet2 <- function (tree, dataset,
                       Bootstrapper   = MorphyBootstrapMatrix,
                       ProposedMoves  = RootedTBRSwapAll,
                       BootstrapSwapper = ProposedMoves,
-                      stopAtScore = NULL,
+                      proposalLimit = 20L,
+                      stopAtScore = NULL, 
                       
                       ratchIter = 1000L, ratchHits = 20L,
                       searchHits = 100L, bootstrapHits = searchHits,
                       verbosity = 1L, suboptimal = 1e-08, ...) {
   epsilon <- 1e-08
   nHits <- 1L
+  datasetNames <- names(dataset)
+  
+  TreeToEdgeMatrix <- function (tree) {
+    if (dim(tree$edge)[1] != 2 * tree$Nnode) {
+      stop("tree must be bifurcating; try rooting with ape::root and using
+           ape::collapse.singles")
+    }
+    tree <- RenumberTips(tree, datasetNames)
+    
+    # Return:
+    RenumberTreeStrict(tree$edge[, 1], tree$edge[, 2])
+  }
+  
   # initialize tree and data
   if (class(tree) == 'multiPhylo') {
-    message('Input tree has class `multiPhylo`; using first entry only')
-    tree <- tree[[1]]
+    edgeMatrix <- vapply(tree, TreeToEdgeMatrix, tree[[1]]$edge)
+    hits <- edgeMatrix
+    tree <- RenumberTips(tree[[1]], datasetNames)
+  } else {
+    edgeMatrix <- TreeToEdgeMatrix(tree)
+    hits <- array(edgeMatrix, c(dim(edgeMatrix), 1L))
+    tree <- RenumberTips(tree, datasetNames)
   }
-  if (dim(tree$edge)[1] != 2 * tree$Nnode) {
-    stop("tree must be bifurcating; try rooting with ape::root and using
-         ape::collapse.singles")
-  }
-  tree <- RenumberTips(tree, names(dataset))
-  edgeMatrix <- RenumberTreeStrict(tree$edge[, 1], tree$edge[, 2])
-  hits <- array(edgeMatrix, c(dim(edgeMatrix), 1L))
-
+  
   initializedData <- InitializeData(dataset)
   on.exit(initializedData <- CleanUpData(initializedData))
   
@@ -289,7 +301,7 @@ Ratchet2 <- function (tree, dataset,
   iterationsWithBestScore <- 0
   
   for (i in 1:ratchIter) {
-    Report(verbosity, 1L, "\n* Ratchet iteration ", i, '.', 
+    Report(verbosity, 1L, "\n* Ratchet iteration ", i, '/', ratchIter, '.', 
            appendPrefix = FALSE)
     Report(verbosity, 2L,
            "Generating new candidate tree by bootstrapping dataset.")
@@ -306,10 +318,11 @@ Ratchet2 <- function (tree, dataset,
     candidate <- EdgeMatrixSearch(candidate, dataset = initializedData,
                                   TreeScorer = TreeScorer, 
                                   ProposedMoves = ProposedMoves,
+                                  proposalLimit = proposalLimit,
                                   maxHits = searchHits, 
                                   verbosity = verbosity - 2L, ...)
     candScore <- attr(candidate, 'score')
-  
+    
     if (!is.null(stopAtScore) && candScore < stopAtScore + epsilon) {
       Report(verbosity, 1L, "Target score ", stopAtScore, 
              " met; terminating tree search.")
@@ -319,7 +332,7 @@ Ratchet2 <- function (tree, dataset,
     }
     
     Report(verbosity, 2L, "Rearranged candidate tree scored ",
-           signif(candScore, 6))
+           signif(candScore))
     
     if ((candScore + epsilon) < bestScore) {
       Report(verbosity, 1L, "New best score ", signif(candScore, 6), ' hit ', 

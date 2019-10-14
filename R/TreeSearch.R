@@ -159,7 +159,7 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
       candidates, hits[, , actualHits, drop = FALSE],
       sliceDim = dimCandidates[1:2], slices1 = nCandidates, slices2 = nHits),
       MARGIN = 3L, fromLast = TRUE)[seq_len(nCandidates)]
-    candidates[, , !priorHits]
+    candidates[, , !priorHits, drop = FALSE]
   }
   
   NewCandidates <- function (edgeMatrix) {

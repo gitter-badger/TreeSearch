@@ -388,7 +388,13 @@ TreeSearch <- function (tree, dataset,
   tree 
 }
 
-EdgesToForest <- function (edges) {
+
+#' @param tree Object of class phylo, corresponding to the starting tree 
+#' from which edges were originally obtained.
+#' @author Martin R. Smith
+#' @keywords internal
+#' @export
+EdgesToForest <- function (edges, tree) {
   if (dim(edges)[3] > 1L) {
     ret <- structure(apply(edges, 3, function (edge) {
       ret <- tree
@@ -403,6 +409,11 @@ EdgesToForest <- function (edges) {
   ret
 }
 
+#' Find local optimum
+#' 
+#' @inheritParams TreeSearch
+#' @author Martin R. Smith
+#' @export
 FindPeak <- function (tree, dataset, 
                       InitializeData = PhyDat2Morphy,
                       CleanUpData    = UnloadMorphy,
@@ -425,5 +436,5 @@ FindPeak <- function (tree, dataset,
                            verbosity = verbosity, ...)
   
   # Return:
-  EdgesToForest(edges)
+  EdgesToForest(edges, tree)
 }

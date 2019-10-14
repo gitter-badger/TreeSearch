@@ -357,7 +357,7 @@ Ratchet2 <- function (tree, dataset,
   }
   
   # Return:
-  EdgesToForest(hits)
+  EdgesToForest(hits, tree)
 }
 
 #' @describeIn Ratchet Shortcut for Ratchet search under Profile Parsimony

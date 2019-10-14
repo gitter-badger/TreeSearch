@@ -75,7 +75,10 @@ Ratchet <- function (tree, dataset,
   epsilon <- 1e-08
   hits <- 0L
   # initialize tree and data
-  if (dim(tree$edge)[1] != 2 * tree$Nnode) stop("tree must be bifurcating; try rooting with ape::root")
+  if (dim(tree$edge)[1] != 2 * tree$Nnode) {
+    stop("tree must be bifurcating; try rooting with ape::root and using
+       ape::collapse.singles")
+  }
   tree <- RenumberTips(tree, names(dataset))
   edgeList <- MatrixToList(tree$edge)
   edgeList <- RenumberEdges(edgeList[[1]], edgeList[[2]])

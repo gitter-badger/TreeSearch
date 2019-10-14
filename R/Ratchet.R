@@ -281,21 +281,18 @@ Ratchet2 <- function (tree, dataset,
           stopAtScore)
   
   if (!is.null(stopAtScore) && bestScore < stopAtScore + epsilon) {
-    if (verbosity > 1L) {
-      message("*** Target score of ", stopAtScore, " met.")
-    }
+    Report(verbosity, 1L,
+      "*** Target score of ", stopAtScore, " met.")
     return(tree)
   }
   
   iterationsWithBestScore <- 0
   
   for (i in 1:ratchIter) {
-    if (verbosity > 1L) {
-      message("\n* Ratchet iteration ", i, '.')
-      if (verbosity > 2L) {
-        message(" - Generating new candidate tree by bootstrapping dataset.")
-      }
-    }
+    Report(verbosity, 1L, "\n* Ratchet iteration ", i, '.', 
+           appendPrefix = FALSE)
+    Report(verbosity, 2L,
+           "Generating new candidate tree by bootstrapping dataset.")
     candidate <- Bootstrapper(hits[, , 1], initializedData,
                               maxHits = bootstrapHits, 
                               verbosity = verbosity - 2L, 
@@ -304,9 +301,7 @@ Ratchet2 <- function (tree, dataset,
     candidate <- candidate[, , dim(candidate)[3]]
     candScore <- 1e+08
     
-    if (verbosity > 2L) {
-      message(" - Rearranging from new candidate tree:")
-    }
+    Report(verbosity, 2L, "Rearranging from new candidate tree:")
     
     candidate <- EdgeMatrixSearch(candidate, dataset = initializedData,
                                   TreeScorer = TreeScorer, 
@@ -316,24 +311,20 @@ Ratchet2 <- function (tree, dataset,
     candScore <- attr(candidate, 'score')
   
     if (!is.null(stopAtScore) && candScore < stopAtScore + epsilon) {
-      if (verbosity > 1L) {
-        message("  * Target score ", stopAtScore, 
-                " met; terminating tree search.")
-      }
+      Report(verbosity, 1L, "Target score ", stopAtScore, 
+             " met; terminating tree search.")
       bestScore <- candScore
       
       break
     }
     
-    if (verbosity > 2L) {
-      message("  - Rearranged candidate tree scored ", signif(candScore, 6))
-    }
+    Report(verbosity, 2L, "Rearranged candidate tree scored ",
+           signif(candScore, 6))
     
     if ((candScore + epsilon) < bestScore) {
-      if (verbosity > 1L) {
-        message(" - New best score ", signif(candScore, 6), ' hit ', 
+      Report(verbosity, 1L, "New best score ", signif(candScore, 6), ' hit ', 
                 dim(candidate)[3], ' times')
-      }
+      
       # New 'best' tree
       hits <- candidate
       bestScore <- candScore
@@ -341,27 +332,23 @@ Ratchet2 <- function (tree, dataset,
     } else if (bestScore + epsilon > candScore) {
         # i.e. best == cand, allowing for floating point error
       iterationsWithBestScore <- iterationsWithBestScore + 1L
-      if (verbosity > 2L) {
-        message("   - Best score found again (", iterationsWithBestScore, '/',
-                ratchHits, ' replications)')
-      }
+      Report(verbosity, 2L, "Best score found again (", iterationsWithBestScore,
+             '/', ratchHits, ' replications)')
+      
       hits <- ABindUnique(candidate, hits)
     }
-    if (verbosity > 1L) {
-      message("* Best score after ", i, "/", ratchIter, 
+    Report(verbosity, 1L, "Best score after ", i, "/", ratchIter, 
               " ratchet iterations: ", signif(bestScore), " (hit ", 
               iterationsWithBestScore, "/", ratchHits, ")\n")
-    }
+    
     if ((!is.null(stopAtScore) && bestScore < stopAtScore + epsilon) 
     || (iterationsWithBestScore >= ratchHits)) {
       break
     }
   } # end for
 
-  if (verbosity > 0L) {
-    message("Completed parsimony ratchet after ", i, " iterations with score ",
-            signif(bestScore, 7), "\n")
-  }
+  Report(verbosity, 0L, "Completed parsimony ratchet after ", i,
+         " iterations with score ", signif(bestScore, 7), "\n")
   
   # Return:
   EdgesToForest(hits, tree)

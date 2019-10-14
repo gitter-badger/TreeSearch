@@ -109,7 +109,7 @@ BindArrays <- function(array1, array2, dim1 = dim(array1), sliceDim = dim1[1:2],
 #' Write log message
 Report <- function (level, ..., appendLF = TRUE, appendPrefix = TRUE) {
   if (verbosity > level) {
-    prefix <- if (appendPrefix) switch(level,
+    prefix <- if (appendPrefix) switch(as.character(level),
                      '0' = '',
                      '1' = ' - ',
                      '2' = ' * ',
@@ -160,20 +160,23 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
   }
   
   NewCandidates <- function (edgeMatrix) {
-    Report(2L, 'Requesting ', if (is.null(proposalLimit)) '' else 
-        paste0(proposalLimit, ' '), 'move proposals... ', 
-              appendLF = FALSE)
+    Report(2L, 'Requesting ', proposalLimit, if (!is.null(proposalLimit)) ' ',
+           'moves... ', appendLF = FALSE)
     
     candidates <- ProposedMoves(edgeMatrix[, 1], edgeMatrix[, 2], nEdge,
                                 sampleSize = proposalLimit)
+    
     Report(3L, dim(candidates)[3], ' moves proposed, ', 
            appendPrefix = FALSE, appendLF = FALSE)
+    
     candidates <- ShuffleArray(NotHitAlready(candidates))
+    
     Report(2L, dim(candidates)[3], ' novel trees added to queue.',
            appendPrefix = FALSE)
     
     candidates
   }
+  
   candidates <- NewCandidates(edgeMatrix)
   lastProposal <- dim(candidates)[3]
   newIteration <- TRUE
@@ -262,7 +265,7 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
               Report(4L, 'Candidate score ', signif(candidateScore, 6), ' > ',
                     signif(bestScore, 6))
           } else {
-            if (i %% 20 == 0) message('.')
+            if (i %% 20 == 0) message('     ...')
           }
         }
       }

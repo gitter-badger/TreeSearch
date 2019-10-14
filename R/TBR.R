@@ -361,9 +361,18 @@ NestedTreeListToArray <- function (edgeList, nEdge) {
 
 #' @describeIn TBR Return all edgelists that are one TBR move away but preserve
 #' the position of the root, as arrays
+#' @param sampleSize Integer.  Once `sampleSize` or more trees have been
+#'  identified, stop sampling at end of loop.
+#'  If `NULL` (the default), all trees will be returned.
+#'  Note that some trees may be duplicates.
 #' @export
-RootedTBRSwapAll <- function (parent, child, nEdge = length(parent)) {
+RootedTBRSwapAll <- function (parent, child, nEdge = length(parent),
+                              sampleSize = NULL) {
   if (nEdge < 5) return (TBRWarning(parent, child, 'Fewer than 4 tips'))
+  
+  sampleLimit <- !is.null(sampleSize)
+  sampled <- 0L
+  
   nTips <- (nEdge / 2L) + 1L
   rootNode <- parent[1]
   rootEdges <- parent == rootNode
@@ -406,8 +415,8 @@ RootedTBRSwapAll <- function (parent, child, nEdge = length(parent)) {
     subtreeWithRoot <- if (edgeInRight) rightTree else !rightTree
     subtreeEdges <- !rootEdges & subtreeWithRoot
     edgesCutAdrift <- DescendantEdges(edgeToBreak, parent, child, nEdge)
-    if (sum(edgesCutAdrift) < 3 && # the edge itself, and somewheres else
-        sum(subtreeEdges, -edgesCutAdrift) < 3) next
+    if (sum(edgesCutAdrift) < 3L && # the edge itself, and somewheres else
+        sum(subtreeEdges, -edgesCutAdrift) < 3L) next
     
     brokenEdge <- seq_along(parent) == edgeToBreak
     brokenEdge.parentNode <- parent[edgeToBreak]
@@ -435,6 +444,7 @@ RootedTBRSwapAll <- function (parent, child, nEdge = length(parent)) {
           samplable <- which(subtreeEdges & !edgesOnAdriftSegment)
         }
         nSamplable <- length(samplable)
+        
         vapply(samplable, function (rootedReconnectionEdge) 
           TBRTree(adriftReconnectionEdge = adriftReconnectionEdge, 
                   rootedReconnectionEdge = rootedReconnectionEdge,
@@ -470,6 +480,10 @@ RootedTBRSwapAll <- function (parent, child, nEdge = length(parent)) {
                   brokenEdgeParent), blankEdges)
       }
     })
+    if (sampleLimit) {
+      sampled <- sampled + length(ret[[i]])
+      if (sampled >= sampleSize) break
+    } 
   }
   # Return:
   NestedTreeListToArray(ret, nEdge)

@@ -208,6 +208,8 @@ test_that('RootedTBRSwapAll returns all moves', {
                                      MARGIN = 3, fromLast = TRUE)
                           [seq_len(nSwaps)]))
   
+  # Sample subset
+  expect_equal(4L, dim(RootedTBRSwapAll(parent, child, 10L, sampleSize = 1L))[3])
 })
 
 test_that("CollapseNodes works", {

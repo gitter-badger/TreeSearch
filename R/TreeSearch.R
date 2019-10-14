@@ -166,9 +166,11 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
     
     candidates <- ProposedMoves(edgeMatrix[, 1], edgeMatrix[, 2], nEdge,
                                 sampleSize = proposalLimit)
-    Report(3L, dim(candidates)[3], ' moves proposed, ', appendLF = FALSE)
+    Report(3L, dim(candidates)[3], ' moves proposed, ', 
+           appendPrefix = FALSE, appendLF = FALSE)
     candidates <- ShuffleArray(NotHitAlready(candidates))
-    Report(2L, dim(candidates)[3], ' novel trees added to queue.')
+    Report(2L, dim(candidates)[3], ' novel trees added to queue.',
+           appendPrefix = FALSE)
     
     candidates
   }

@@ -108,13 +108,15 @@ BindArrays <- function(array1, array2, dim1 = dim(array1), sliceDim = dim1[1:2],
 
 #' Write log message
 Report <- function (level, ..., appendLF = TRUE, appendPrefix = TRUE) {
-  if (verbosity > level) {
+  if (verbosity > level) { # TODO: Confirm that this really does look for 
+    # verbosity in the parent enviroment as it ought to, rather than starting 
+    # in the global environment
     prefix <- if (appendPrefix) switch(as.character(level),
                      '0' = '',
                      '1' = ' - ',
                      '2' = ' * ',
-                     '3' = '   ',
-                     '4' = '   > ',
+                     '3' = '   - ',
+                     '4' = '     > ',
                      '     . ') else ''
     message(prefix, ..., appendLF = appendLF)
   }
@@ -160,18 +162,18 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
   }
   
   NewCandidates <- function (edgeMatrix) {
-    Report(2L, 'Requesting ', proposalLimit, if (!is.null(proposalLimit)) ' ',
+    Report(4L, 'Requesting ', proposalLimit, if (!is.null(proposalLimit)) ' ',
            'moves... ', appendLF = FALSE)
     
     candidates <- ProposedMoves(edgeMatrix[, 1], edgeMatrix[, 2], nEdge,
                                 sampleSize = proposalLimit)
     
-    Report(3L, dim(candidates)[3], ' moves proposed, ', 
+    Report(5L, dim(candidates)[3], ' moves proposed, ', 
            appendPrefix = FALSE, appendLF = FALSE)
     
     candidates <- ShuffleArray(NotHitAlready(candidates))
     
-    Report(2L, dim(candidates)[3], ' novel trees added to queue.',
+    Report(4L, dim(candidates)[3], ' trees returned.',
            appendPrefix = FALSE)
     
     candidates
@@ -185,6 +187,7 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
     if (limitProposals && !newIteration) {
       lastLimit <- proposalLimit
       proposalLimit <- lastProposal + lastProposal
+      
       Report(4L, 'Increasing proposal limit from ', lastLimit, ' to ',
                 proposalLimit)
       
@@ -256,6 +259,7 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
           
           candidates <- BindArrays(NewCandidates(candidates[, , i]),
                                    candidates[, , -seq_len(i)])
+          newIteration <- TRUE
           i <- 0 # In case we found a hit on the last candidate
           break
         }
@@ -271,10 +275,17 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
       }
     }
     
-    if (!limitProposals && i == nCandidates) {
-      Report(1L, "All ", nHits, " best trees are locally optimal.")
-      break
+    if (i == nCandidates) {
+      if (!limitProposals) {
+        Report(1L, "All ", nHits, " best trees are locally optimal.")
+        break
+      } else {
+        Report(3L, 'Completed batch of ', nCandidates, ' candidate trees.  ',
+               if (newIteration) 'Getting next candidates from queue.' else 
+                 'Generating new more.')
+      }
     }
+    
   }
   
   if (verbosity > 0L) {

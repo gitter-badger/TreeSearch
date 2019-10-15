@@ -269,8 +269,8 @@ Ratchet2 <- function (tree, dataset,
   
   # initialize tree and data
   if (class(tree) == 'multiPhylo') {
-    edgeMatrix <- vapply(tree, TreeToEdgeMatrix, tree[[1]]$edge)
-    hits <- edgeMatrix
+    hits <- vapply(tree, TreeToEdgeMatrix, tree[[1]]$edge)
+    edgeMatrix <- hits[, , 1L]
     tree <- RenumberTips(tree[[1]], datasetNames)
   } else {
     edgeMatrix <- TreeToEdgeMatrix(tree)

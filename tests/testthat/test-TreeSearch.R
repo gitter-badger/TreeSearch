@@ -16,17 +16,19 @@ test_that("tree can be found", {
                           EdgeSwapper=RootedTBRSwap, verbosity=0L), comb11)
 #  expect_equal(TreeSearch(random11, dataset=phy11, maxIter=250, EdgeSwapper=AllTBR, 
 #                          stopAtPeak=TRUE, stopAtPlateau=10L, verbosity=0L), comb11)
-  expect_equal(TreeSearch(random11, phy11, maxIter=400,
-                                  EdgeSwapper=RootedSPRSwap, verbosity=0L), comb11)
-  expect_equal(TreeSearch(RandomTree(phy11, 'a'), phy11, maxIter=200, EdgeSwapper = RootedNNISwap, verbosity=0), comb11)
+  expect_equal(comb11, TreeSearch(random11, phy11, maxIter=400, 
+                                  EdgeSwapper=RootedSPRSwap, verbosity=0L))
+  expect_equal(comb11, TreeSearch(RandomTree(phy11, 'a'), phy11, maxIter=200,
+                                  EdgeSwapper = RootedNNISwap, verbosity=0))
   expect_equal(comb11, Ratchet(random11, phy11, searchIter=10, searchHits = 5,
                                swappers = RootySwappers, ratchHits=3, verbosity=0))
   set.seed(0)
   expect_equal(comb11, Ratchet2(tree = random11, dataset = phy11,
-                                ratchHits = 3L, verbosity = 5L))
-  expect_equal(comb11, Ratchet2(structure(list(random11, RandomTree(phy11, 'a')),
-                                               class='multiPhylo'), phy11, 
-                                          ratchHits = 3L, verbosity = 10))
+                                ratchHits = 2L, verbosity = 0L))
+  expect_equal(comb11, 
+               Ratchet2(tree = structure(list(random11, RandomTree(phy11, 'a')),
+                                               class='multiPhylo'), 
+                        dataset = phy11, ratchHits = 2L, verbosity = 0L))
 #  expect_equal(SectorialSearch(RandomTree(phy11, 'a'), phy11, verbosity=-1), comb11) # TODO: Sectorial Search not working yet!
 })
 

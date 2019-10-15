@@ -24,7 +24,7 @@ test_that("tree can be found", {
   set.seed(0)
   expect_equal(comb11, Ratchet2(tree = random11, dataset = phy11,
                                 ratchHits = 3L, verbosity = 5L))
-  expect_equal(comb11, Ratchet2(structure(list(random11, RandomTree(phy11, 'a'),
+  expect_equal(comb11, Ratchet2(structure(list(random11, RandomTree(phy11, 'a')),
                                                class='multiPhylo'), phy11, 
                                           ratchHits = 3L, verbosity = 10))
 #  expect_equal(SectorialSearch(RandomTree(phy11, 'a'), phy11, verbosity=-1), comb11) # TODO: Sectorial Search not working yet!

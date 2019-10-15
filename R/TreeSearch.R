@@ -195,6 +195,7 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
       candidates <- NewCandidates(hits[, , 1])
       if (dim(candidates)[3] < proposalLimit) {
         # We've reached the limit
+        Report(verbosity, 4L, 'Proposal limit too high. Removing limit.')
         proposalLimit <- NULL
         limitProposals <- FALSE
       }
@@ -203,7 +204,10 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
     newIteration <- FALSE
     
     nCandidates <- dim(candidates)[3]
-    if (nCandidates == 0) break
+    if (nCandidates == 0) {
+      Report(verbosity, 2L, "No unvisited candidate trees.")
+      break
+    }
     if (nCandidates > maxQueue) {
       Report(verbosity, 1L, 'Trimming overflowing queue to maxQueue = ', maxQueue)
       candidates <- candidates[, , seq_len(maxQueue)]

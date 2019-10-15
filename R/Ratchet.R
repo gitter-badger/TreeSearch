@@ -320,8 +320,8 @@ Ratchet2 <- function (tree, dataset,
                                   TreeScorer = TreeScorer, 
                                   ProposedMoves = ProposedMoves,
                                   proposalLimit = proposalLimit,
-                                  verbosity = verbosity - 2L, ...)
                                   maxHits = searchHits,
+                                  verbosity = verbosity - 2L, ...)
     candScore <- attr(candidate, 'score')
     
     if (!is.null(stopAtScore) && candScore < stopAtScore + epsilon) {

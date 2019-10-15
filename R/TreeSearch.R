@@ -112,8 +112,8 @@ Report <- function (verbosity, level, ..., appendLF = TRUE, appendPrefix = TRUE)
     # verbosity in the parent enviroment as it ought to, rather than starting 
     # in the global environment
     prefix <- if (appendPrefix) switch(as.character(level),
-                     '0' = '',
-                     '1' = ' - ',
+                     '0' = '\n',
+                     '1' = '\n - ',
                      '2' = ' . ',
                      '3' = '   - ',
                      '4' = '     > ',

@@ -272,7 +272,7 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
           break
         }
       } else {
-        if (verbosity > 4L) {
+        if (verbosity > 6L) {
           if (verbosity > 8L) { 
             Report(verbosity, 4L, 'Candidate score ', signif(candidateScore, 6), ' > ',
                     signif(bestScore, 6))

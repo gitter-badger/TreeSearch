@@ -198,7 +198,7 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
         proposalLimit <- NULL
         limitProposals <- FALSE
       }
-      candidates <- candidates[, , -seq_len(lastProposal)]
+      candidates <- candidates[, , -seq_len(lastProposal), drop = FALSE]
     }
     newIteration <- FALSE
     
@@ -259,7 +259,7 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
           }
           
           candidates <- BindArrays(NewCandidates(candidates[, , i]),
-                                   candidates[, , -seq_len(i)])
+                                   candidates[, , -seq_len(i), drop = FALSE])
           newIteration <- TRUE
           i <- 0 # In case we found a hit on the last candidate
           break

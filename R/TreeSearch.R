@@ -200,10 +200,13 @@ EdgeMatrixSearch <- function (edgeMatrix, dataset,
         limitProposals <- FALSE
       }
       candidates <- candidates[, , -seq_len(lastProposal), drop = FALSE]
+      nCandidates <- dim(candidates)[3]
+      lastProposal <- nCandidates
+    } else {
+      nCandidates <- dim(candidates)[3]
     }
     newIteration <- FALSE
     
-    nCandidates <- dim(candidates)[3]
     if (nCandidates == 0) {
       Report(verbosity, 2L, "No unvisited candidate trees.")
       break
